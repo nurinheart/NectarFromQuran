@@ -44,6 +44,24 @@ class CairoArabicRenderer:
     def __init__(self, width=1080, height=1350):
         self.width = width
         self.height = height
+        self._verify_fonts()
+    
+    def _verify_fonts(self):
+        """Verify Arabic fonts are available via fontconfig (for Cairo/Pango)"""
+        import subprocess
+        try:
+            # Check if fc-list is available
+            result = subprocess.run(['fc-list', ':lang=ar'], capture_output=True, text=True, timeout=5)
+            if result.returncode == 0 and result.stdout:
+                print("✅ Arabic fonts found via fontconfig:")
+                # Show first 3 fonts
+                fonts = [line for line in result.stdout.split('\n') if line][:3]
+                for font in fonts:
+                    print(f"   {font[:80]}")
+            else:
+                print("⚠️  No Arabic fonts found via fontconfig - using system fallback")
+        except:
+            print("⚠️  Could not verify fonts (fc-list not available)")
     
     def render_arabic_verse(self, text, font_family="Amiri", font_size=50, 
                           bg_color=(245, 242, 237), text_color=(80, 60, 40),

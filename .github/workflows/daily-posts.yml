@@ -22,7 +22,7 @@ jobs:
       with:
         python-version: '3.12'
     
-    - name: Install system dependencies (Cairo, Pango)
+    - name: Install system dependencies (Cairo, Pango, fontconfig)
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -30,13 +30,20 @@ jobs:
           libpango1.0-dev \
           libglib2.0-dev \
           libffi-dev \
-          pkg-config
+          pkg-config \
+          fontconfig
         
         # Verify Cairo and Pango are installed
         pkg-config --modversion cairo
         pkg-config --modversion pango
+    
+    - name: Setup fonts for Cairo/Pango
+      run: |
+        # Run font setup script
+        bash setup_fonts.sh
         
-        # Note: Arabic fonts are bundled in fonts/ directory
+        # Verify bundled fonts exist
+        echo "📁 Bundled fonts:"
         ls -la fonts/arabic/
     
     - name: Install Python dependencies

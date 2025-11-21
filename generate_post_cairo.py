@@ -742,11 +742,11 @@ class QuranPostGeneratorCairo:
             highlight_keywords=False
         )
         
-        # Position handle at bottom
+        # Position handle at bottom (with proper spacing from watermark)
         handle_img = Image.new('RGBA', (IMAGE_WIDTH, IMAGE_HEIGHT), (0, 0, 0, 0))
         handle_paste = handle_layer.convert('RGBA')
         handle_crop = handle_paste.crop((0, (IMAGE_HEIGHT - 200) // 2, IMAGE_WIDTH, (IMAGE_HEIGHT + 200) // 2))
-        handle_img.paste(handle_crop, (0, 1050))
+        handle_img.paste(handle_crop, (0, 950))  # Changed from 1050 to 950 for proper spacing
         
         img = img.convert('RGBA')
         img.alpha_composite(handle_img)

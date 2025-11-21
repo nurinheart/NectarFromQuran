@@ -5,7 +5,7 @@ Create and post Quranic verse to Instagram
 ✅ Auto-cleanup of old files (7 days)
 """
 
-from generate_post_cairo import QuranPostGenerator
+from generate_post_cairo import QuranPostGeneratorCairo
 from instagram_poster import InstagramPoster
 from config import DEFAULT_THEME, POSTING_SCHEDULE
 import os
@@ -56,7 +56,7 @@ def main():
     
     try:
         # Initialize generator
-        generator = QuranPostGenerator(DEFAULT_THEME)
+        generator = QuranPostGeneratorCairo(DEFAULT_THEME)
         
         # Generate carousel slides
         print(f"\n📝 Generating post...")

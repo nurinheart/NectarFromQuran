@@ -49,6 +49,7 @@ class QuranPostGeneratorCairo:
         self.api = QuranAPI()
         self.cairo_renderer = CairoArabicRenderer(width=IMAGE_WIDTH, height=IMAGE_HEIGHT)
         self.load_posted_verses()
+        self.current_verse_info = None  # Store current verse for caption generation
     
     def hex_to_rgb(self, hex_color):
         """Convert hex color to RGB tuple"""
@@ -138,6 +139,10 @@ class QuranPostGeneratorCairo:
         self.posted_indices.append(index)
         with open(self.posted_file, 'w') as f:
             json.dump(self.posted_indices, f)
+    
+    def get_verse_info(self):
+        """Get current verse info for caption generation"""
+        return self.current_verse_info
     
     def get_next_verse(self):
         """
@@ -741,7 +746,7 @@ class QuranPostGeneratorCairo:
             max_width=IMAGE_WIDTH - 200,
             alignment="center",
             transparent_bg=True,
-            line_height=2.0,  # More spacing for easier reading
+            line_height=1.7,  # More spacing for easier reading
             highlight_keywords=False
         )
         
@@ -751,32 +756,7 @@ class QuranPostGeneratorCairo:
         img.alpha_composite(message_rgba, (0, 0))
         img = img.convert('RGB')
         
-        # Bottom text - simple account handle
-        handle_text = f"@{WATERMARK.replace('@', '')}"
-        
-        handle_layer = self.cairo_renderer.render_english_text(
-            text=handle_text,
-            font_family=heading_config.get('family', 'DejaVu Sans'),
-            font_size=44,  # Clear, readable size
-            bg_color=(0, 0, 0),
-            text_color=self.hex_to_rgb(self.theme['accent_color']),
-            max_width=IMAGE_WIDTH - 200,
-            alignment="center",
-            transparent_bg=True,
-            highlight_keywords=False
-        )
-        
-        # Position handle at bottom (with proper spacing from watermark)
-        handle_img = Image.new('RGBA', (IMAGE_WIDTH, IMAGE_HEIGHT), (0, 0, 0, 0))
-        handle_paste = handle_layer.convert('RGBA')
-        handle_crop = handle_paste.crop((0, (IMAGE_HEIGHT - 200) // 2, IMAGE_WIDTH, (IMAGE_HEIGHT + 200) // 2))
-        handle_img.paste(handle_crop, (0, 1000))  # Position above watermark
-        
-        img = img.convert('RGBA')
-        img.alpha_composite(handle_img)
-        img = img.convert('RGB')
-        
-        # Add watermark at very bottom
+        # Add watermark at very bottom (no gold handle in middle - just clean watermark)
         img = self.add_watermark(img)
         
         return img
@@ -832,6 +812,9 @@ class QuranPostGeneratorCairo:
         if verse_data is None:
             index, verse_data = self.get_next_verse()
             self.save_posted_verse(index)
+        
+        # Store verse info for caption generation
+        self.current_verse_info = verse_data
         
         print(f"\n📖 Generating post for Surah {verse_data['surah_number']}, Ayah {verse_data['ayah_number']}")
         

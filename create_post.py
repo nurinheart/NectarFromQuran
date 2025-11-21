@@ -3,6 +3,7 @@ Create and post Quranic verse to Instagram
 ✅ Auto-fetches authentic tafsir from APIs (NEVER makes up content)
 ✅ Posts to feed + shares to story with "New Post" text
 ✅ Auto-cleanup of old files (7 days)
+✅ Dynamic captions with trendy hashtags
 """
 
 from generate_post_cairo import QuranPostGeneratorCairo
@@ -11,6 +12,90 @@ from config import DEFAULT_THEME, POSTING_SCHEDULE
 import os
 import sys
 import time
+import random
+
+
+def generate_dynamic_caption(verse_info):
+    """
+    Generate dynamic, engaging captions with trendy hashtags
+    Changes based on verse theme for variety
+    """
+    theme = verse_info.get('theme', 'Guidance')
+    surah_name = verse_info.get('surah_name', 'Quran')
+    reference = f"{surah_name} {verse_info.get('surah_number', '')}:{verse_info.get('ayah_number', '')}"
+    
+    # Theme-based caption hooks (trendy and engaging)
+    caption_hooks = {
+        'Mercy': [
+            f"When you need a reminder of Allah's infinite mercy... 🤲\n\n{reference}",
+            f"This verse hits different when you realize Allah's mercy is unlimited 💚\n\n{reference}",
+            f"POV: You're feeling hopeless but then you read this verse 🌙\n\n{reference}",
+            f"Allah's mercy > your mistakes. Remember this. ✨\n\n{reference}",
+        ],
+        'Patience': [
+            f"The patience reminder we all needed today 🕊️\n\n{reference}",
+            f"When life tests you, remember this verse 💪\n\n{reference}",
+            f"POV: You're about to lose patience, then you remember... 🌸\n\n{reference}",
+            f"This is your sign to keep going. Trust the process. 🌟\n\n{reference}",
+        ],
+        'Gratitude': [
+            f"Daily gratitude check ✅ What are you thankful for today?\n\n{reference}",
+            f"This verse will change how you see your blessings 🙏\n\n{reference}",
+            f"Alhamdulillah for everything. Even the struggles. 💛\n\n{reference}",
+            f"The gratitude mindset shift we all need 🌻\n\n{reference}",
+        ],
+        'Prayer': [
+            f"Your Salah matters more than you think 🤲\n\n{reference}",
+            f"This verse about prayer will hit your soul differently 🕌\n\n{reference}",
+            f"POV: You almost skipped Fajr, then remembered this... 🌅\n\n{reference}",
+            f"The power of Salah explained in one verse ✨\n\n{reference}",
+        ],
+        'Faith': [
+            f"Faith check: This verse will strengthen your Iman 💚\n\n{reference}",
+            f"When you doubt, read this. When you believe, read it again 🌙\n\n{reference}",
+            f"This is the Iman boost you were looking for today ✨\n\n{reference}",
+            f"Your faith journey starts here 🌟\n\n{reference}",
+        ],
+        'Guidance': [
+            f"The guidance you've been seeking 🧭\n\n{reference}",
+            f"Allah's roadmap for life in one verse 🌙\n\n{reference}",
+            f"Lost? Read this. Found? Read it anyway. 💫\n\n{reference}",
+            f"This verse is the answer to your du'a 🤲\n\n{reference}",
+        ],
+    }
+    
+    # Get hooks for this theme, fallback to Guidance if theme not found
+    hooks = caption_hooks.get(theme, caption_hooks['Guidance'])
+    main_caption = random.choice(hooks)
+    
+    # Trendy hashtag sets - rotated for variety
+    hashtag_sets = [
+        # Set 1: Spiritual growth focus
+        "#Quran #Islam #MuslimLife #Jannah #Sabr #Allah #Dua #IslamicReminder #MuslimCommunity #Ummah #IslamicQuotes #ProphetMuhammad #Taqwa #QuranicWisdom",
+        
+        # Set 2: Daily reminder focus  
+        "#DailyQuran #IslamDaily #MuslimDaily #QuranicVerses #IslamicDailyReminder #AllahIsGreat #IslamicPost #Alhamdulillah #SubhanAllah #MuslimRevert #IslamicContent",
+        
+        # Set 3: Young Muslim focus
+        "#MuslimYouth #MuslimMillennials #MuslimGenZ #IslamicMotivation #FaithOverFear #MuslimInfluencer #IslamicInspo #MuslimContentCreator #Hijabi #ModestFashion",
+        
+        # Set 4: Knowledge & learning focus
+        "#LearnIslam #IslamicKnowledge #Tafsir #IslamicEducation #QuranicStudies #SeekKnowledge #IslamicTeachings #Hadith #Sunnah #IslamicHistory #DeenOverDunya",
+        
+        # Set 5: Spiritual & peace focus
+        "#PeaceInIslam #SpiritualJourney #IslamicPeace #InnerPeace #QuranicHealing #IslamicSpirituality #AllahsLove #TrustAllah #IslamicMindfulness #Dhikr",
+    ]
+    
+    # Pick random hashtag set for variety
+    hashtags = random.choice(hashtag_sets)
+    
+    # Add swipe call-to-action
+    cta = "\n\n📖 Swipe for translation, tafsir & practical reflection"
+    
+    # Combine all parts
+    full_caption = main_caption + cta + "\n\n" + hashtags + "\n\n#NectarFromQuran"
+    
+    return full_caption
 
 
 def cleanup_old_files():
@@ -65,19 +150,12 @@ def main():
         print(f"\n✅ Generated {len(slide_paths)} slides successfully!")
         
         # Post to Instagram
-        print("\n� Posting to Instagram...")
+        print("\n📸 Posting to Instagram...")
         poster = InstagramPoster()
         
-        # Create caption
-        caption = f"""Daily wisdom from the Quran ✨
-
-    Swipe through for:
-• Arabic text with harakat
-• Translation (Sahih International)
-• Tazkirul Quran explanation
-• Practical reflection
-
-#quran #islam #islamicreminder #dailyquran #quranicwisdom #nectarfromquran #tafsir #islamicquotes #muslimlife"""
+        # Generate dynamic caption based on verse theme
+        verse_info = generator.get_verse_info()
+        caption = generate_dynamic_caption(verse_info)
         
         # Post carousel to feed
         media_pk = poster.post_carousel(slide_paths, caption)

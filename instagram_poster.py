@@ -206,43 +206,69 @@ class InstagramPoster:
                 print(f"❌ Story image not found: {image_path}")
                 return None
             
-            # Create story version with "New Post" text at bottom
-            story_img = Image.open(image_path)
+            # Create proper story canvas (1080x1920 for Instagram stories)
+            # Load original carousel image (1080x1350)
+            carousel_img = Image.open(image_path)
+            
+            story_width = 1080
+            story_height = 1920
+            story_img = Image.new('RGB', (story_width, story_height), color=(0, 0, 0))
+            
+            # Center the carousel image vertically on story canvas
+            y_offset = (story_height - carousel_img.height) // 2
+            story_img.paste(carousel_img, (0, y_offset))
+            
+            # Add "Tap to view full post →" text at bottom with better styling
             draw = ImageDraw.Draw(story_img)
             
-            # Add "New Post" text at bottom
             try:
-                font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 60)
+                font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 48)
+                font_small = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 36)
             except:
-                font = ImageFont.load_default()
+                font_large = ImageFont.load_default()
+                font_small = ImageFont.load_default()
             
-            text = "New Post ✨"
-            # Get text bbox
-            bbox = draw.textbbox((0, 0), text, font=font)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
+            # Main text
+            main_text = "New Post ✨"
+            sub_text = "Tap to view →"
             
-            # Position at bottom center
-            x = (story_img.width - text_width) // 2
-            y = story_img.height - text_height - 80
+            # Get text dimensions
+            bbox_main = draw.textbbox((0, 0), main_text, font=font_large)
+            main_width = bbox_main[2] - bbox_main[0]
+            main_height = bbox_main[3] - bbox_main[1]
+            
+            bbox_sub = draw.textbbox((0, 0), sub_text, font=font_small)
+            sub_width = bbox_sub[2] - bbox_sub[0]
+            sub_height = bbox_sub[3] - bbox_sub[1]
+            
+            # Position at bottom with padding
+            main_x = (story_width - main_width) // 2
+            main_y = story_height - main_height - sub_height - 120
+            
+            sub_x = (story_width - sub_width) // 2
+            sub_y = main_y + main_height + 20
             
             # Draw text with outline for visibility
             outline_color = (0, 0, 0)
             text_color = (255, 255, 255)
             
-            # Draw outline
+            # Draw main text with outline
+            for adj_x in range(-3, 4):
+                for adj_y in range(-3, 4):
+                    draw.text((main_x + adj_x, main_y + adj_y), main_text, font=font_large, fill=outline_color)
+            draw.text((main_x, main_y), main_text, font=font_large, fill=text_color)
+            
+            # Draw sub text with outline
             for adj_x in range(-2, 3):
                 for adj_y in range(-2, 3):
-                    draw.text((x + adj_x, y + adj_y), text, font=font, fill=outline_color)
+                    draw.text((sub_x + adj_x, sub_y + adj_y), sub_text, font=font_small, fill=outline_color)
+            draw.text((sub_x, sub_y), sub_text, font=font_small, fill=(200, 200, 200))
             
-            # Draw main text
-            draw.text((x, y), text, font=font, fill=text_color)
-            
-            # Save modified story image
+            # Save story image
             story_path = str(image_path).replace('.png', '_story.png')
             story_img.save(story_path)
             
-            print(f"📤 Uploading to story...")
+            print(f"📤 Uploading to story (1080x1920)...")
             
             # Upload to story
             if post_url:

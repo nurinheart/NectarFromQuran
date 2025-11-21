@@ -124,7 +124,7 @@ class InstagramPoster:
         try:
             from pathlib import Path
             
-            # Convert paths to Path objects
+            # Convert to Path objects for verification
             paths = [Path(img) for img in image_paths]
             
             # Verify all files exist
@@ -135,9 +135,9 @@ class InstagramPoster:
             
             print(f"📤 Uploading carousel with {len(paths)} slides...")
             
-            # Upload as album/carousel
+            # Upload as album/carousel - instagrapi expects string paths
             media = self.client.album_upload(
-                paths=paths,
+                paths=[str(p) for p in paths],  # Convert back to strings
                 caption=caption
             )
             
@@ -210,15 +210,15 @@ class InstagramPoster:
             
             print(f"📤 Uploading to story...")
             
-            # Upload to story
+            # Upload to story - instagrapi expects string paths
             if post_url:
                 # Add link sticker if post URL provided
                 media = self.client.photo_upload_to_story(
-                    path=Path(story_path),
+                    path=story_path,  # Use string path
                     links=[{"webUri": post_url}]
                 )
             else:
-                media = self.client.photo_upload_to_story(path=Path(story_path))
+                media = self.client.photo_upload_to_story(path=story_path)  # Use string path
             
             print(f"✅ Story posted successfully!")
             print(f"🔗 Story PK: {media.pk}")

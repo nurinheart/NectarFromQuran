@@ -6,6 +6,7 @@ Posts generated hadith images to Instagram automatically
 import os
 from instagrapi import Client
 from instagrapi.exceptions import LoginRequired, TwoFactorRequired, ChallengeRequired
+from instagrapi.types import StoryLink
 import json
 from dotenv import load_dotenv
 
@@ -243,15 +244,16 @@ class InstagramPoster:
             
             print(f"📤 Uploading to story...")
             
-            # Upload to story - instagrapi expects string paths
+            # Upload to story
             if post_url:
-                # Add link sticker if post URL provided
+                # Add link sticker if post URL provided (use StoryLink object)
+                link = StoryLink(webUri=post_url)
                 media = self.client.photo_upload_to_story(
-                    path=story_path,  # Use string path
-                    links=[{"webUri": post_url}]
+                    path=story_path,
+                    links=[link]
                 )
             else:
-                media = self.client.photo_upload_to_story(path=story_path)  # Use string path
+                media = self.client.photo_upload_to_story(path=story_path)
             
             print(f"✅ Story posted successfully!")
             print(f"🔗 Story PK: {media.pk}")

@@ -90,125 +90,134 @@ git push
 
 ```
 NectarFromQuran/
-├── create_post.py            # Main script (generate → post → story → cleanup)
-├── generate_post_cairo.py    # Image generation with Cairo rendering
-├── auto_tafsir_fetcher.py    # Fetch Tazkirul Quran from API
-├── quran_api.py              # Fetch verses from API
-├── cairo_renderer.py         # Perfect Arabic rendering
-├── instagram_poster.py       # Instagram API integration
-├── config.py                 # Configuration (theme, fonts, schedule)
-├── requirements.txt          # Python dependencies
-├── session.json              # Instagram session (local only)
-├── posted_verses.json        # Tracking posted verses
-├── quran_cache.json          # Cached API responses
-├── .github/workflows/
-│   └── daily-posts.yml       # 5× daily automation
-├── fonts/                    # Product Sans fonts
-├── samples/                  # Design samples (generated)
-└── output/                   # Generated posts
+├── Core Scripts
+│   ├── create_post.py            # Main entry point (generate → post → story → cleanup)
+│   ├── generate_post_cairo.py    # Image generation with Cairo/Pango rendering
+│   ├── auto_tafsir_fetcher.py    # Fetch Tazkirul Quran tafsir from API
+│   ├── quran_api.py              # Fetch verses & translations from API
+│   ├── cairo_renderer.py         # Perfect Arabic text rendering
+│   ├── instagram_poster.py       # Instagram API integration
+│   └── font_manager.py           # Font loading and management
+│
+├── Configuration
+│   ├── config.py                 # All settings (theme, fonts, schedule)
+│   └── requirements.txt          # Python dependencies
+│
+├── Helper Tools
+│   ├── get_instagram_session.py # Generate Instagram session for GitHub
+│   └── verify_production.py     # Pre-deployment verification
+│
+├── Documentation
+│   ├── README.md                 # This file
+│   ├── QUICK_START.md            # 10-minute deployment guide
+│   ├── PRODUCTION_SETUP.md       # Complete setup instructions
+│   ├── PRE_FLIGHT_CHECKLIST.md  # Pre-deployment checklist
+│   ├── PRODUCTION_READY.md       # System architecture & features
+│   └── DEPLOYMENT_CHECKLIST.txt  # Quick reference checklist
+│
+├── Data & Cache
+│   ├── posted_verses.json        # Tracks posted verses (git tracked)
+│   ├── quran_cache.json          # Cached API responses (git tracked)
+│   └── tafsir_cache.json         # Cached tafsir (git tracked)
+│
+├── GitHub Actions
+│   └── .github/workflows/
+│       └── daily-posts.yml       # Automated posting (2× daily)
+│
+├── Assets
+│   ├── fonts/                    # Arabic fonts (Amiri, Noto, Scheherazade)
+│   └── output/                   # Generated images (temporary)
+│
+└── .gitignore                    # Git exclusions
 ```
-
-## 🎨 Design Samples
-
-After running `python3 generate_post.py`, check:
-- `samples/minimalist_*/` - Clean modern style
-- `samples/pattern_*/` - Geometric patterns
-- `samples/calligraphy_*/` - Artistic calligraphy
-
-Each folder contains 4+ carousel slides showing:
-1. Arabic verse (Uthmani script)
-2. English translation
-3. Tafsir explanation
-4. (Additional tafsir slides if needed)
-
-## 🕌 Posting Schedule
-
-5 times daily aligned with prayer times (UTC):
-- 04:00 UTC (Fajr time)
-- 11:00 UTC (Dhuhr time)
-- 14:00 UTC (Asr time)
-- 17:00 UTC (Maghrib time)
-- 20:00 UTC (Isha time)
-
-## 📖 Themes & Verses
-
-10 themes with 10 verses each = 100 total verses:
-1. **Mercy** - Allah's infinite mercy and forgiveness
-2. **Patience** - Rewards of patience and perseverance
-3. **Gratitude** - Being thankful to Allah
-4. **Prayer** - Importance and virtues of Salah
-5. **Family** - Rights and responsibilities
-6. **Knowledge** - Seeking and applying knowledge
-7. **Trust in Allah** - Tawakkul and reliance
-8. **Charity** - Giving for Allah's sake
-9. **Guidance** - Following the straight path
-10. **Hope** - Optimism and hope in Allah
 
 ## 🔧 Customization
 
 ### Change Theme
 Edit `config.py`:
 ```python
-DEFAULT_THEME = "forest_green"  # Any theme name
+DEFAULT_THEME = "elegant_black"  # Options: elegant_black, sage_cream, teal_gold
 ```
 
-### Change Style
-Edit `generate_post.py` line 18:
+### Change Posting Schedule
+Edit `.github/workflows/daily-posts.yml`:
+```yaml
+schedule:
+  - cron: '0 6 * * *'   # Morning post (UTC)
+  - cron: '0 21 * * *'  # Night post (UTC)
+```
+
+### Adjust Font Sizes
+Edit `config.py`:
 ```python
-style="calligraphy"  # minimalist, pattern, or calligraphy
+CAIRO_FONTS = {
+    "arabic_verse": {"size": 60},    # Arabic text
+    "translation": {"size": 45},     # English translation
+    "tafsir": {"size": 42},          # Tafsir explanation
+}
 ```
 
-### Add More Verses
-Edit `quran_data.py` and add to `THEMATIC_VERSES` dict.
-
-### Adjust Posting Times
-Edit `.github/workflows/daily-posts.yml` cron schedules.
+### Change Watermark
+Edit `config.py`:
+```python
+WATERMARK = "@YourInstagramHandle"
+```
 
 ## 🛠️ Technical Details
 
-### Arabic Text Handling (ROOT FIX)
-- Uses `arabic-reshaper` for proper letter connection
-- Uses `python-bidi` for RTL text direction
-- Uthmani script from AlQuran API
-- Full diacritics (تشكيل) preserved
-- No rendering errors or boxes
+### Arabic Rendering
+- **Cairo/Pango Engine**: Professional text rendering with perfect harakat
+- **Amiri Font**: Traditional Arabic calligraphy with full diacritics
+- **RTL Support**: Proper right-to-left text direction
+- **No Rendering Errors**: Unlike PIL, Cairo handles complex Arabic perfectly
 
-### Carousel Posts
-- 4-10 slides per post (Instagram limit)
-- Auto-splits long tafsir across multiple slides
-- Smart text wrapping for Arabic and English
-- Consistent design across all slides
+### Content Sources
+- **Verses**: QuranAPI community wrapper (quranapi.pages.dev)
+- **Translation**: Sahih International
+- **Tafsir**: Tazkirul Quran (naturally concise, 700-1500 chars)
+- **All content is API-sourced** (zero made-up content)
 
-### API & Caching
-- AlQuran Cloud API for verses
-- Local caching to avoid repeated API calls
-- Offline fallback for cached verses
-- Timeout handling
+### Carousel Generation
+- **Dynamic Slides**: 1-10 slides based on content length
+- **Instagram Optimized**: 1080×1350px format
+- **Smart Splitting**: Long content automatically split across slides
+- **Navigation**: "Swipe →" indicators on each slide
+
+### Caching & Performance
+- Local caching to reduce API calls
+- Cached data tracked in git for reliability
+- Offline fallback for cached content
+- Fast generation (~30 seconds per post)
 
 ## 📱 Testing Locally
 
-Generate a single post:
-```python
-from generate_post import QuranPostGenerator
+### Test Image Generation
+```bash
+python3 generate_post_cairo.py
+```
+Check `output/` folder for generated images.
 
-generator = QuranPostGenerator("teal_gold", style="minimalist")
-slide_paths, index, verse_data = generator.generate_post()
+### Test Full Workflow (Posts to Instagram!)
+```bash
+python3 create_post.py
+```
+⚠️ This will post to your Instagram account.
 
-print(f"Generated {len(slide_paths)} slides:")
-for path in slide_paths:
-    print(f"  - {path}")
+### Verify Production Readiness
+```bash
+python3 verify_production.py
 ```
 
 ## 🤲 Sadaqah Jariyah
 
-This project is intended as Sadaqah Jariyah (ongoing charity). Every person who benefits from these verses, reflects on them, or applies their teachings will bring reward to all involved.
+This project is Sadaqah Jariyah (ongoing charity). Every person who benefits from these Quranic reminders will bring reward to all involved.
 
-May Allah accept this effort and make it a means of guidance for many. Ameen.
-
-## 📄 License
-
-This project is open source and available for anyone to use for spreading the message of the Quran.
+**May Allah accept this effort and make it a means of guidance for the Ummah. Ameen.** 🤲
 
 ---
 
-**Built with ❤️ for the sake of Allah**
+## 📄 License
+
+Open source - Free to use for spreading the message of the Quran.
+
+**Built with ❤️ for the sake of Allah** • Version 2.0 • Production Ready

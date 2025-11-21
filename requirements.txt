@@ -1,0 +1,25 @@
+# Python dependencies for NectarFromQuran project
+
+# Image processing
+Pillow==10.3.0
+
+# Instagram automation
+instagrapi==2.2.1
+
+# HTTP requests
+requests==2.32.4
+
+# Cairo + Pango for perfect Arabic rendering (NEW - replaces arabic-reshaper/bidi)
+cairocffi>=1.7.0
+pangocffi>=0.13.0
+pangocairocffi>=0.7.0
+
+# Legacy Arabic text support (kept for backward compatibility)
+arabic-reshaper==3.0.0
+python-bidi==0.4.2
+
+# JSON handling (built-in, listed for clarity)
+# json (built-in)
+
+# Scheduling (for automated daily posts)
+schedule==1.2.0

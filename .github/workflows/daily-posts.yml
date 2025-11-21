@@ -1,0 +1,59 @@
+name: Daily Quran Posts
+
+on:
+  schedule:
+    # 2 times daily (as configured in config.py POSTING_SCHEDULE)
+    - cron: '0 6 * * *'   # 06:00 UTC - Morning post
+    - cron: '0 21 * * *'  # 21:00 UTC - Night post
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  post-quran:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install system dependencies (Cairo, Pango, Fonts)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libcairo2-dev \
+          libpango1.0-dev \
+          libgdk-pixbuf2.0-dev \
+          libffi-dev \
+          shared-mime-info \
+          fonts-noto \
+          fonts-noto-core \
+          fonts-noto-extra \
+          fonts-noto-ui-core \
+          fonts-noto-cjk \
+          fonts-amiri
+    
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Generate and post Quran verse
+      env:
+        INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_SESSION_DATA: ${{ secrets.INSTAGRAM_SESSION_DATA }}
+      run: |
+        python3 create_post.py
+    
+    - name: Upload generated images as artifacts (optional)
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: quran-posts
+        path: output/*.png
+        retention-days: 7

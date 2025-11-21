@@ -1,0 +1,158 @@
+import os
+
+# Configuration for NectarFromQuran - Daily Quranic Verses
+
+# Instagram post dimensions (4:5 ratio for carousel)
+IMAGE_WIDTH = 1080
+IMAGE_HEIGHT = 1350
+
+# Theme configurations - 7 beautiful color schemes
+THEMES = {
+    "teal_gold": {
+        "name": "Teal & Gold",
+        "bg_colors": ["#0F4C5C", "#1A7A8A"],  # Deep teal to bright teal
+        "text_color": "#FFFFFF",  # White for contrast
+        "arabic_color": "#FFD700",  # Gold for Arabic
+        "heading_color": "#FFD700",  # Gold
+        "source_color": "#E8E8E8",  # Light gray
+    },
+    "deep_blue": {
+        "name": "Deep Blue & White",
+        "bg_colors": ["#1A237E", "#283593"],  # Navy to indigo
+        "text_color": "#FFFFFF",  # White
+        "arabic_color": "#FFFFFF",  # White Arabic
+        "heading_color": "#64B5F6",  # Light blue
+        "source_color": "#B3E5FC",  # Pale blue
+    },
+    "sage_cream": {
+        "name": "Sage & Cream",
+        "bg_colors": ["#E8F3E8", "#D4E7D4"],  # Light sage to soft green
+        "text_color": "#1B3A1B",  # Dark green
+        "arabic_color": "#2E7D32",  # Medium green
+        "heading_color": "#2E7D32",  # Medium green
+        "source_color": "#4CAF50",  # Bright green
+    },
+    "purple_gold": {
+        "name": "Purple & Gold",
+        "bg_colors": ["#4A148C", "#6A1B9A"],  # Deep purple to purple
+        "text_color": "#FFFFFF",  # White
+        "arabic_color": "#FFD700",  # Gold
+        "heading_color": "#FFD700",  # Gold
+        "source_color": "#E1BEE7",  # Light purple
+    },
+    "warm_sunset": {
+        "name": "Warm Sunset",
+        "bg_colors": ["#BF360C", "#D84315"],  # Deep orange to bright orange
+        "text_color": "#FFFFFF",  # White
+        "arabic_color": "#FFF9C4",  # Light yellow
+        "heading_color": "#FFEB3B",  # Yellow
+        "source_color": "#FFE0B2",  # Peach
+    },
+    "forest_green": {
+        "name": "Forest Green",
+        "bg_colors": ["#1B5E20", "#2E7D32"],  # Dark green to forest green
+        "text_color": "#FFFFFF",  # White
+        "arabic_color": "#C8E6C9",  # Light green
+        "heading_color": "#81C784",  # Medium green
+        "source_color": "#A5D6A7",  # Pale green
+    },
+    "elegant_black": {
+        "name": "Elegant Black & Gold",
+        "bg_colors": ["#000000", "#1A1A1A"],  # Black to dark gray
+        "text_color": "#FFFFFF",  # White
+        "arabic_color": "#FFD700",  # Gold
+        "heading_color": "#FFD700",  # Gold
+        "source_color": "#C0C0C0",  # Silver
+    }
+}
+
+# Default theme
+DEFAULT_THEME = "teal_gold"
+
+# Font settings for Arabic with diacritics
+FONTS = {
+    "arabic_large": {
+        "size": 72,  # Large for main Arabic verse
+        "family": "Arabic Calligraphy"
+    },
+    "arabic_medium": {
+        "size": 56,  # Medium for shorter verses
+        "family": "Arabic"
+    },
+    "heading": {
+        "size": 48,
+        "family": "Product Sans"
+    },
+    "translation": {
+        "size": 52,  # English translation
+        "family": "Product Sans"
+    },
+    "tafsir": {
+        "size": 44,  # Tafsir text (smaller)
+        "family": "Product Sans"
+    },
+    "source": {
+        "size": 38,
+        "family": "Product Sans"
+    }
+}
+
+# Font file paths
+FONT_PATHS = {
+    "product_sans_regular": "fonts/ProductSans-Regular.ttf",
+    "product_sans_bold": "fonts/ProductSans-Bold.ttf",
+}
+
+# Arabic fonts with full diacritics support (ROOT FIX: no rendering errors!)
+ARABIC_FONTS = [
+    # Linux/Ubuntu fonts (GitHub Actions) - Prioritized
+    "/usr/share/fonts/truetype/noto/NotoNaskhArabic-Regular.ttf",
+    "/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf",
+    "/usr/share/fonts/truetype/fonts-arabeyes/ae_AlArabiya.ttf",
+    # macOS fonts
+    "/System/Library/Fonts/Supplemental/GeezaPro.ttc",
+    "/System/Library/Fonts/Supplemental/Baghdad.ttf",
+    "/System/Library/Fonts/Supplemental/DecoTypeNaskh.ttc",
+    "/Library/Fonts/Arial Unicode.ttf",
+    # Fallback
+    "Arial Unicode MS.ttf",
+]
+
+# Layout settings
+PADDING = 80
+LINE_SPACING = 1.7
+MAX_TEXT_WIDTH = IMAGE_WIDTH - (PADDING * 2)
+
+# Arabic text settings (ROOT FIX: proper RTL support)
+ARABIC_LINE_SPACING = 2.0  # More spacing for Arabic
+ARABIC_TEXT_DIRECTION = "rtl"  # Right-to-left
+ENABLE_RESHAPING = True  # Enable Arabic reshaping
+ENABLE_BIDI = True  # Enable bidirectional text support
+
+# Carousel settings
+MIN_SLIDES = 4  # Minimum slides per post
+MAX_SLIDES = 10  # Maximum slides (Instagram limit)
+AUTO_SPLIT_LONG_TEXT = True  # Auto-split long tafsir into multiple slides
+
+# Branding
+WATERMARK = "@nectarfromquran"
+WATERMARK_SIZE = 28
+WATERMARK_OPACITY = 120
+
+# Image settings (for pattern overlays)
+USE_PATTERNS = True
+PATTERN_OPACITY = 0.15  # Subtle patterns
+USE_GRADIENTS = True
+
+# Instagram Credentials
+INSTAGRAM_USERNAME = os.environ.get("INSTAGRAM_USERNAME")
+INSTAGRAM_SESSION_DATA = os.environ.get("INSTAGRAM_SESSION_DATA")
+
+# Quran API settings
+QURAN_API_BASE = "https://api.alquran.cloud/v1"
+QURAN_EDITION_ARABIC = "quran-uthmani"  # With full diacritics
+QURAN_EDITION_TRANSLATION = "en.sahih"  # Sahih International
+
+# Logging
+LOG_LEVEL = "INFO"
+LOG_FILE = "quran_generator.log"

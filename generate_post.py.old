@@ -1,0 +1,502 @@
+"""
+Quranic Verse Post Generator - Multiple Design Styles
+Generates beautiful carousel posts with Arabic verses, translations, and tafsir
+"""
+
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+import json
+import os
+from datetime import datetime
+from config import *
+from quran_data import get_all_verses
+from quran_api import QuranAPI
+from arabic_handler import prepare_arabic_text, split_arabic_text_by_length
+import random
+
+
+class QuranPostGenerator:
+    def __init__(self, theme_name=DEFAULT_THEME, style="minimalist"):
+        """
+        Initialize generator
+        style options: "minimalist", "pattern", "calligraphy"
+        """
+        self.theme = THEMES.get(theme_name, THEMES[DEFAULT_THEME])
+        self.style = style
+        self.posted_file = "posted_verses.json"
+        self.verses_data = get_all_verses()
+        self.api = QuranAPI()
+        self.load_posted_verses()
+    
+    def load_posted_verses(self):
+        """Load list of already posted verse indices"""
+        if os.path.exists(self.posted_file):
+            with open(self.posted_file, 'r') as f:
+                self.posted_indices = json.load(f)
+        else:
+            self.posted_indices = []
+    
+    def save_posted_verse(self, index):
+        """Save the index of posted verse"""
+        self.posted_indices.append(index)
+        with open(self.posted_file, 'w') as f:
+            json.dump(self.posted_indices, f)
+    
+    def get_next_verse(self):
+        """Get next unposted verse with thematic rotation"""
+        available = [i for i in range(len(self.verses_data)) if i not in self.posted_indices]
+        
+        if not available:
+            print("🔄 All verses posted! Resetting...")
+            self.posted_indices = []
+            available = list(range(len(self.verses_data)))
+        
+        # Pick from available verses
+        index = available[0]  # Take first available for systematic rotation
+        verse_meta = self.verses_data[index]
+        
+        # Fetch full verse data from API
+        verse_data = self.api.get_verse(verse_meta['surah'], verse_meta['ayah'])
+        
+        if not verse_data:
+            print(f"⚠️  Could not fetch verse data, skipping...")
+            self.posted_indices.append(index)
+            return self.get_next_verse()
+        
+        # Combine metadata with API data
+        verse_data['theme'] = verse_meta['theme']
+        verse_data['tafsir'] = verse_meta['tafsir_excerpt']
+        
+        return index, verse_data
+    
+    def get_font(self, font_type, size=None):
+        """Get font with proper Arabic support"""
+        if size is None:
+            size = FONTS[font_type]['size']
+        
+        # Arabic fonts
+        if 'arabic' in font_type:
+            for font_path in ARABIC_FONTS:
+                try:
+                    return ImageFont.truetype(font_path, size)
+                except:
+                    continue
+        
+        # Product Sans for English
+        product_sans_path = FONT_PATHS['product_sans_bold']
+        try:
+            if os.path.exists(product_sans_path):
+                return ImageFont.truetype(product_sans_path, size)
+        except:
+            pass
+        
+        # System font fallbacks
+        font_options = [
+            '/System/Library/Fonts/Supplemental/Arial.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+            'Arial.ttf'
+        ]
+        
+        for font_path in font_options:
+            try:
+                return ImageFont.truetype(font_path, size)
+            except:
+                continue
+        
+        return ImageFont.load_default()
+    
+    def hex_to_rgb(self, hex_color):
+        """Convert hex color to RGB tuple"""
+        hex_color = hex_color.lstrip('#')
+        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    
+    def create_gradient_background(self):
+        """Create smooth gradient background"""
+        img = Image.new('RGB', (IMAGE_WIDTH, IMAGE_HEIGHT))
+        draw = ImageDraw.Draw(img)
+        
+        color1 = self.hex_to_rgb(self.theme['bg_colors'][0])
+        color2 = self.hex_to_rgb(self.theme['bg_colors'][1])
+        
+        for y in range(IMAGE_HEIGHT):
+            factor = y / IMAGE_HEIGHT
+            r = int(color1[0] * (1 - factor) + color2[0] * factor)
+            g = int(color1[1] * (1 - factor) + color2[1] * factor)
+            b = int(color1[2] * (1 - factor) + color2[2] * factor)
+            draw.line([(0, y), (IMAGE_WIDTH, y)], fill=(r, g, b))
+        
+        return img
+    
+    def wrap_text(self, text, font, max_width):
+        """Wrap text to fit within max width"""
+        lines = []
+        words = text.split()
+        current_line = []
+        
+        for word in words:
+            test_line = ' '.join(current_line + [word])
+            bbox = font.getbbox(test_line)
+            width = bbox[2] - bbox[0]
+            
+            if width <= max_width:
+                current_line.append(word)
+            else:
+                if current_line:
+                    lines.append(' '.join(current_line))
+                current_line = [word]
+        
+        if current_line:
+            lines.append(' '.join(current_line))
+        
+        return lines
+    
+    def wrap_arabic_text(self, text, font, max_width):
+        """Wrap Arabic text (RTL) to fit within max width"""
+        # For Arabic, we split by spaces and measure
+        words = text.split()
+        lines = []
+        current_line = []
+        
+        for word in words:
+            test_line = ' '.join(current_line + [word])
+            bbox = font.getbbox(test_line)
+            width = bbox[2] - bbox[0]
+            
+            if width <= max_width:
+                current_line.append(word)
+            else:
+                if current_line:
+                    lines.append(' '.join(current_line))
+                current_line = [word]
+        
+        if current_line:
+            lines.append(' '.join(current_line))
+        
+        return lines
+    
+    # ==== STYLE 1: MINIMALIST MODERN ====
+    def create_slide_minimalist(self, content_type, verse_data, slide_number=1):
+        """Create minimalist modern style slide"""
+        img = self.create_gradient_background()
+        draw = ImageDraw.Draw(img)
+        
+        y_pos = 120
+        
+        if content_type == "arabic":
+            # Slide 1: Large Arabic verse
+            arabic_text = prepare_arabic_text(verse_data['arabic'])
+            
+            # Choose font size based on length
+            if len(verse_data['arabic']) < 100:
+                font = self.get_font('arabic_large', size=80)
+            elif len(verse_data['arabic']) < 200:
+                font = self.get_font('arabic_large', size=68)
+            else:
+                font = self.get_font('arabic_medium', size=56)
+            
+            # Wrap and center Arabic text
+            lines = self.wrap_arabic_text(arabic_text, font, MAX_TEXT_WIDTH - 100)
+            
+            # Calculate total height
+            line_height = font.getbbox('ا')[3] * ARABIC_LINE_SPACING
+            total_height = len(lines) * line_height
+            
+            # Center vertically
+            y_pos = (IMAGE_HEIGHT - total_height) // 2
+            
+            # Draw each line centered
+            for line in lines:
+                bbox = font.getbbox(line)
+                line_width = bbox[2] - bbox[0]
+                x_pos = (IMAGE_WIDTH - line_width) // 2
+                
+                draw.text((x_pos, y_pos), line, fill=self.theme['arabic_color'], font=font)
+                y_pos += line_height
+            
+            # Add reference at bottom
+            ref_font = self.get_font('source', size=42)
+            ref_text = f"Surah {verse_data['surah_name']} ({verse_data['surah_number']}:{verse_data['ayah_number']})"
+            ref_bbox = ref_font.getbbox(ref_text)
+            ref_width = ref_bbox[2] - ref_bbox[0]
+            ref_x = (IMAGE_WIDTH - ref_width) // 2
+            
+            draw.text((ref_x, IMAGE_HEIGHT - 150), ref_text, fill=self.theme['source_color'], font=ref_font)
+        
+        elif content_type == "translation":
+            # Slide 2: English translation
+            heading_font = self.get_font('heading', size=44)
+            heading_text = "English Translation"
+            heading_bbox = heading_font.getbbox(heading_text)
+            heading_width = heading_bbox[2] - heading_bbox[0]
+            heading_x = (IMAGE_WIDTH - heading_width) // 2
+            
+            draw.text((heading_x, y_pos), heading_text, fill=self.theme['heading_color'], font=heading_font)
+            y_pos += 100
+            
+            # Translation text
+            trans_font = self.get_font('translation', size=52)
+            lines = self.wrap_text(verse_data['translation'], trans_font, MAX_TEXT_WIDTH - 80)
+            
+            line_height = trans_font.getbbox('A')[3] * LINE_SPACING
+            total_height = len(lines) * line_height
+            y_pos = (IMAGE_HEIGHT - total_height) // 2
+            
+            for line in lines:
+                bbox = trans_font.getbbox(line)
+                line_width = bbox[2] - bbox[0]
+                x_pos = (IMAGE_WIDTH - line_width) // 2
+                
+                draw.text((x_pos, y_pos), line, fill=self.theme['text_color'], font=trans_font)
+                y_pos += line_height
+            
+            # Reference
+            ref_font = self.get_font('source', size=38)
+            ref_text = f"— Sahih International"
+            ref_bbox = ref_font.getbbox(ref_text)
+            ref_width = ref_bbox[2] - ref_bbox[0]
+            ref_x = (IMAGE_WIDTH - ref_width) // 2
+            
+            draw.text((ref_x, IMAGE_HEIGHT - 140), ref_text, fill=self.theme['source_color'], font=ref_font)
+        
+        elif content_type == "tafsir":
+            # Slide 3+: Tafsir (Ibn Kathir)
+            heading_font = self.get_font('heading', size=44)
+            heading_text = f"Tafsir Ibn Kathir"
+            heading_bbox = heading_font.getbbox(heading_text)
+            heading_width = heading_bbox[2] - heading_bbox[0]
+            heading_x = (IMAGE_WIDTH - heading_width) // 2
+            
+            draw.text((heading_x, y_pos), heading_text, fill=self.theme['heading_color'], font=heading_font)
+            y_pos += 100
+            
+            # Tafsir text (may be split across multiple slides)
+            tafsir_font = self.get_font('tafsir', size=46)
+            lines = self.wrap_text(verse_data['tafsir'], tafsir_font, MAX_TEXT_WIDTH - 60)
+            
+            line_height = tafsir_font.getbbox('A')[3] * LINE_SPACING
+            
+            for line in lines:
+                bbox = tafsir_font.getbbox(line)
+                line_width = bbox[2] - bbox[0]
+                x_pos = (IMAGE_WIDTH - line_width) // 2
+                
+                draw.text((x_pos, y_pos), line, fill=self.theme['text_color'], font=tafsir_font)
+                y_pos += line_height
+                
+                # Stop if we run out of space (will continue in next slide if needed)
+                if y_pos > IMAGE_HEIGHT - 200:
+                    break
+        
+        # Watermark
+        if WATERMARK:
+            watermark_font = self.get_font('source', WATERMARK_SIZE)
+            watermark_bbox = watermark_font.getbbox(WATERMARK)
+            watermark_width = watermark_bbox[2] - watermark_bbox[0]
+            watermark_x = (IMAGE_WIDTH - watermark_width) // 2
+            
+            watermark_color = self.hex_to_rgb(self.theme['source_color'])
+            draw.text((watermark_x, IMAGE_HEIGHT - 60), WATERMARK, fill=watermark_color, font=watermark_font)
+        
+        return img
+    
+    # ==== STYLE 2: ISLAMIC PATTERNS ====
+    def create_slide_pattern(self, content_type, verse_data, slide_number=1):
+        """Create Islamic pattern overlay style"""
+        # Start with minimalist base
+        img = self.create_slide_minimalist(content_type, verse_data, slide_number)
+        
+        # Add subtle geometric pattern overlay (if USE_PATTERNS enabled)
+        if USE_PATTERNS:
+            # Create simple geometric pattern
+            pattern = Image.new('RGBA', (IMAGE_WIDTH, IMAGE_HEIGHT), (255, 255, 255, 0))
+            pattern_draw = ImageDraw.Draw(pattern)
+            
+            # Draw subtle hexagonal pattern
+            hex_size = 60
+            for y in range(0, IMAGE_HEIGHT, hex_size * 2):
+                for x in range(0, IMAGE_WIDTH, hex_size * 2):
+                    # Draw hexagon outline
+                    color = (*self.hex_to_rgb(self.theme['heading_color']), int(255 * PATTERN_OPACITY))
+                    pattern_draw.regular_polygon((x + hex_size, y + hex_size, hex_size // 2), 6, 
+                                                 outline=color, width=1)
+            
+            # Composite pattern onto image
+            img = Image.alpha_composite(img.convert('RGBA'), pattern).convert('RGB')
+        
+        return img
+    
+    # ==== STYLE 3: CALLIGRAPHY FOCUS ====
+    def create_slide_calligraphy(self, content_type, verse_data, slide_number=1):
+        """Create calligraphy-focused artistic style"""
+        img = self.create_gradient_background()
+        draw = ImageDraw.Draw(img)
+        
+        if content_type == "arabic":
+            # MASSIVE Arabic calligraphy
+            arabic_text = prepare_arabic_text(verse_data['arabic'])
+            
+            # Extra large font for calligraphy effect
+            font = self.get_font('arabic_large', size=90)
+            
+            lines = self.wrap_arabic_text(arabic_text, font, MAX_TEXT_WIDTH - 60)
+            
+            line_height = font.getbbox('ا')[3] * 2.2  # Extra spacing for artistic look
+            total_height = len(lines) * line_height
+            y_pos = (IMAGE_HEIGHT - total_height) // 2
+            
+            # Add glow effect to Arabic text
+            for line in lines:
+                bbox = font.getbbox(line)
+                line_width = bbox[2] - bbox[0]
+                x_pos = (IMAGE_WIDTH - line_width) // 2
+                
+                # Shadow for depth
+                shadow_color = self.hex_to_rgb(self.theme['bg_colors'][1])
+                draw.text((x_pos + 3, y_pos + 3), line, fill=shadow_color, font=font)
+                
+                # Main text
+                draw.text((x_pos, y_pos), line, fill=self.theme['arabic_color'], font=font)
+                y_pos += line_height
+            
+            # Decorative border at bottom
+            border_y = IMAGE_HEIGHT - 180
+            draw.line([(100, border_y), (IMAGE_WIDTH - 100, border_y)], 
+                     fill=self.theme['heading_color'], width=3)
+            
+            # Reference
+            ref_font = self.get_font('source', size=40)
+            ref_text = f"{verse_data['surah_name_arabic']}"
+            ref_bbox = ref_font.getbbox(ref_text)
+            ref_width = ref_bbox[2] - ref_bbox[0]
+            ref_x = (IMAGE_WIDTH - ref_width) // 2
+            
+            draw.text((ref_x, IMAGE_HEIGHT - 140), ref_text, fill=self.theme['source_color'], font=ref_font)
+        
+        else:
+            # For translation and tafsir, use minimalist style
+            return self.create_slide_minimalist(content_type, verse_data, slide_number)
+        
+        # Watermark
+        if WATERMARK:
+            watermark_font = self.get_font('source', WATERMARK_SIZE)
+            watermark_bbox = watermark_font.getbbox(WATERMARK)
+            watermark_width = watermark_bbox[2] - watermark_bbox[0]
+            watermark_x = (IMAGE_WIDTH - watermark_width) // 2
+            
+            draw.text((watermark_x, IMAGE_HEIGHT - 60), WATERMARK, 
+                     fill=self.theme['source_color'], font=watermark_font)
+        
+        return img
+    
+    def create_carousel_slides(self, verse_data):
+        """Create all slides for carousel post"""
+        slides = []
+        
+        # Determine which creation method to use based on style
+        if self.style == "minimalist":
+            create_method = self.create_slide_minimalist
+        elif self.style == "pattern":
+            create_method = self.create_slide_pattern
+        elif self.style == "calligraphy":
+            create_method = self.create_slide_calligraphy
+        else:
+            create_method = self.create_slide_minimalist
+        
+        # Slide 1: Arabic verse
+        arabic_slide = create_method("arabic", verse_data, 1)
+        slides.append(arabic_slide)
+        
+        # Slide 2: Translation
+        translation_slide = create_method("translation", verse_data, 2)
+        slides.append(translation_slide)
+        
+        # Slide 3+: Tafsir (may need multiple slides if long)
+        tafsir_chunks = split_arabic_text_by_length(verse_data['tafsir'], max_chars=400)
+        
+        for i, chunk in enumerate(tafsir_chunks):
+            tafsir_verse_data = verse_data.copy()
+            tafsir_verse_data['tafsir'] = chunk
+            tafsir_slide = create_method("tafsir", tafsir_verse_data, 3 + i)
+            slides.append(tafsir_slide)
+        
+        # Limit to MAX_SLIDES
+        if len(slides) > MAX_SLIDES:
+            slides = slides[:MAX_SLIDES]
+        
+        return slides
+    
+    def generate_post(self, output_path="output", specific_index=None):
+        """Generate carousel post with multiple slides"""
+        os.makedirs(output_path, exist_ok=True)
+        
+        # Get verse
+        if specific_index is not None:
+            index = specific_index
+            verse_meta = self.verses_data[index]
+            verse_data = self.api.get_verse(verse_meta['surah'], verse_meta['ayah'])
+            verse_data['theme'] = verse_meta['theme']
+            verse_data['tafsir'] = verse_meta['tafsir_excerpt']
+        else:
+            index, verse_data = self.get_next_verse()
+        
+        # Create all carousel slides
+        slides = self.create_carousel_slides(verse_data)
+        
+        # Save slides
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        slide_paths = []
+        
+        for i, slide in enumerate(slides):
+            filename = f"{output_path}/verse_{index}_slide{i+1}_{timestamp}.png"
+            slide.save(filename, quality=95)
+            slide_paths.append(filename)
+            print(f"✅ Generated slide {i+1}/{len(slides)}: {filename}")
+        
+        # Mark as posted (if not generating sample)
+        if specific_index is None:
+            self.save_posted_verse(index)
+        
+        print(f"\n📖 Verse {index + 1}/{len(self.verses_data)}")
+        print(f"📚 Surah: {verse_data['surah_name']} ({verse_data['surah_number']}:{verse_data['ayah_number']})")
+        print(f"🎨 Theme: {verse_data['theme']}")
+        print(f"🎨 Style: {self.style}")
+        print(f"🖼️  Slides: {len(slides)}")
+        print(f"🎨 Color Theme: {self.theme['name']}")
+        
+        return slide_paths, index, verse_data
+
+
+def generate_all_style_samples():
+    """Generate samples for all 3 styles × all 7 themes = 21 samples"""
+    print("🎨 Generating design samples for ALL styles and themes...\n")
+    
+    os.makedirs("samples", exist_ok=True)
+    
+    styles = ["minimalist", "pattern", "calligraphy"]
+    sample_index = 0  # Use first verse as sample
+    
+    for style in styles:
+        print(f"\n{'='*60}")
+        print(f"🎨 STYLE: {style.upper()}")
+        print(f"{'='*60}\n")
+        
+        for theme_name in THEMES.keys():
+            print(f"Creating {style} sample with {THEMES[theme_name]['name']} theme...")
+            
+            generator = QuranPostGenerator(theme_name, style=style)
+            slide_paths, _, _ = generator.generate_post(f"samples/{style}_{theme_name}", specific_index=sample_index)
+            
+            print(f"✅ Created {len(slide_paths)} slides\n")
+    
+    print("\n" + "="*60)
+    print("✅ ALL SAMPLES GENERATED!")
+    print("="*60)
+    print(f"📂 Check the 'samples/' folder")
+    print(f"🎨 3 styles × 7 themes = 21 design variations")
+    print(f"🖼️  Each has 4+ carousel slides")
+    print("\n💡 Review all designs and choose your favorite!")
+    print("💡 Then set it in config.py: DEFAULT_THEME and style")
+
+
+if __name__ == "__main__":
+    # Generate all samples for user to choose
+    generate_all_style_samples()

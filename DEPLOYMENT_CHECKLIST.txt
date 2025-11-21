@@ -1,0 +1,104 @@
+🚀 DEPLOYMENT CHECKLIST - NectarFromQuran
+==========================================
+
+✅ PRE-DEPLOYMENT
+  [ ] Run: python3 verify_production.py (all checks pass)
+  [ ] Update config.py:
+      - WATERMARK = "@YourInstagramHandle"
+      - DEFAULT_THEME = "elegant_black" (or your choice)
+      - POSTING_SCHEDULE times (default: 06:00 & 21:00 UTC)
+  [ ] Test locally: python3 generate_post_cairo.py
+  [ ] Review generated images in output/
+
+✅ INSTAGRAM SESSION
+  [ ] Run: python3 get_instagram_session.py
+  [ ] Copy entire JSON output (starts with { ends with })
+  [ ] Keep it secure (don't share publicly)
+
+✅ GITHUB SETUP
+  [ ] Push code to GitHub
+  [ ] Go to: Settings → Secrets and variables → Actions
+  [ ] Add secret: INSTAGRAM_USERNAME (your username, no @)
+  [ ] Add secret: INSTAGRAM_SESSION_DATA (paste JSON from above)
+  [ ] Verify both secrets exist
+
+✅ FIRST TEST
+  [ ] Go to: Actions tab in GitHub
+  [ ] Click: Daily Quran Posts
+  [ ] Click: Run workflow → Run workflow
+  [ ] Wait 5-10 minutes
+  [ ] Check workflow logs (should see "Successfully posted")
+  [ ] Check Instagram account (new post should appear)
+  [ ] Check story (first slide shared with post link)
+
+✅ VERIFY AUTOMATION
+  [ ] Workflow is enabled (green dot in Actions tab)
+  [ ] Next scheduled run: Check cron times in .github/workflows/daily-posts.yml
+  [ ] Default: 06:00 UTC (morning) & 21:00 UTC (night)
+  [ ] Convert to your timezone if needed
+
+✅ POST-DEPLOYMENT
+  [ ] Monitor first 24 hours (check 2 scheduled posts)
+  [ ] Verify posted_verses.json is updating
+  [ ] Check GitHub Actions logs for errors
+  [ ] Confirm posts appear at scheduled times
+  [ ] Test story sharing works
+
+✅ MAINTENANCE REMINDERS
+  [ ] Refresh Instagram session every 60 days
+  [ ] Check GitHub Actions usage (2000 free minutes/month)
+  [ ] Monitor Instagram account for any issues
+  [ ] Backup posted_verses.json periodically
+
+==========================================
+COMMON ISSUES & FIXES
+==========================================
+
+Issue: Workflow fails with "Instagram login error"
+Fix: Re-run get_instagram_session.py and update INSTAGRAM_SESSION_DATA secret
+
+Issue: Posts not appearing at scheduled time
+Fix: GitHub Actions can delay up to 10 minutes; workflow may be disabled
+
+Issue: Arabic text not rendering
+Fix: Check workflow logs; GitHub Actions installs fonts automatically
+
+Issue: "No module named 'cairocffi'"
+Fix: Normal on Mac; GitHub Actions installs Cairo automatically
+
+Issue: Wrong tafsir content
+Fix: Should say "Tazkirul Quran" not "Ibn Kathir"; check auto_tafsir_fetcher.py
+
+==========================================
+SUPPORT RESOURCES
+==========================================
+
+Documentation:
+  - QUICK_START.md (10-minute guide)
+  - PRODUCTION_SETUP.md (complete guide)
+  - PRE_FLIGHT_CHECKLIST.md (verification)
+  - PRODUCTION_READY.md (architecture)
+
+Tools:
+  - verify_production.py (pre-deployment check)
+  - get_instagram_session.py (session generator)
+
+Testing:
+  - python3 generate_post_cairo.py (test image generation)
+  - python3 create_post.py (test full workflow - posts to Instagram!)
+
+==========================================
+READY TO DEPLOY!
+==========================================
+
+Final steps:
+1. Complete checklist above
+2. Run: python3 verify_production.py
+3. Run: python3 get_instagram_session.py
+4. Add GitHub secrets
+5. Push to GitHub
+6. Actions → Run workflow
+7. Monitor logs
+8. Verify Instagram post
+
+May your posts benefit the Ummah! 🕌✨

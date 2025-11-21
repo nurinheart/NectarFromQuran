@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Session files
+session.json
+*.json.backup
+
+# Outputs (temporary generated images)
+output/*.png
+samples/
+
+# NOTE: The following are TRACKED by git for production:
+# - posted_verses.json (essential for tracking posted verses)
+# - tafsir_cache.json (reduces API calls, improves reliability)
+# - quran_cache.json (reduces API calls, improves reliability)
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Environment
+.env

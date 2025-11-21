@@ -123,6 +123,7 @@ class InstagramPoster:
         """Post multiple images as carousel"""
         try:
             from pathlib import Path
+            from PIL import Image
             
             # Convert to Path objects for verification
             paths = [Path(img) for img in image_paths]
@@ -133,22 +134,54 @@ class InstagramPoster:
                     print(f"❌ Image not found: {path}")
                     return None
             
-            print(f"📤 Uploading carousel with {len(paths)} slides...")
+            # Instagram carousels only support JPG format - convert PNG to JPG
+            jpg_paths = []
+            for path in paths:
+                if path.suffix.lower() == '.png':
+                    jpg_path = path.with_suffix('.jpg')
+                    # Convert PNG to JPG
+                    img = Image.open(path)
+                    # Convert RGBA to RGB (remove alpha channel)
+                    if img.mode in ('RGBA', 'LA', 'P'):
+                        rgb_img = Image.new('RGB', img.size, (255, 255, 255))
+                        rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                        img = rgb_img
+                    img.save(jpg_path, 'JPEG', quality=95)
+                    jpg_paths.append(jpg_path)
+                else:
+                    jpg_paths.append(path)
             
-            # Upload as album/carousel - instagrapi expects string paths
+            print(f"📤 Uploading carousel with {len(jpg_paths)} slides...")
+            
+            # Upload as album/carousel
             media = self.client.album_upload(
-                paths=[str(p) for p in paths],  # Convert back to strings
+                paths=jpg_paths,
                 caption=caption
             )
             
             print(f"✅ Carousel posted successfully!")
             print(f"🔗 Media PK: {media.pk}")
+            
+            # Cleanup temporary JPG files
+            for i, (orig_path, jpg_path) in enumerate(zip(paths, jpg_paths)):
+                if orig_path != jpg_path and jpg_path.exists():
+                    jpg_path.unlink()
+            
             return media.pk
             
         except Exception as e:
             print(f"❌ Carousel post failed: {e}")
             import traceback
             traceback.print_exc()
+            
+            # Cleanup temporary JPG files on error too
+            try:
+                for i, (orig_path, jpg_path) in enumerate(zip(paths, jpg_paths)):
+                    if orig_path != jpg_path and jpg_path.exists():
+                        jpg_path.unlink()
+            except:
+                pass
+            
             return None
     
     def share_to_story(self, image_path, post_url=None):

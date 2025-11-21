@@ -68,22 +68,22 @@ def generate_dynamic_caption(verse_info):
     hooks = caption_hooks.get(theme, caption_hooks['Guidance'])
     main_caption = random.choice(hooks)
     
-    # Trendy hashtag sets - rotated for variety
+    # Quran-focused, modest hashtag sets - rotated for variety
     hashtag_sets = [
-        # Set 1: Spiritual growth focus
-        "#Quran #Islam #MuslimLife #Jannah #Sabr #Allah #Dua #IslamicReminder #MuslimCommunity #Ummah #IslamicQuotes #ProphetMuhammad #Taqwa #QuranicWisdom",
+        # Set 1: Core Quran & Islam
+        "#Quran #HolyQuran #AlQuran #QuranDaily #QuranicVerses #Islam #Muslim #Allah #IslamicReminders #Deen #QuranicWisdom #Ayah #Surah #BookOfAllah",
         
-        # Set 2: Daily reminder focus  
-        "#DailyQuran #IslamDaily #MuslimDaily #QuranicVerses #IslamicDailyReminder #AllahIsGreat #IslamicPost #Alhamdulillah #SubhanAllah #MuslimRevert #IslamicContent",
+        # Set 2: Daily Quran focus  
+        "#DailyQuran #QuranQuotes #QuranReading #QuranRecitation #TilawatEQuran #Tafsir #QuranTranslation #LearnQuran #QuranStudy #IslamicKnowledge #QuranicTeachings",
         
-        # Set 3: Young Muslim focus
-        "#MuslimYouth #MuslimMillennials #MuslimGenZ #IslamicMotivation #FaithOverFear #MuslimInfluencer #IslamicInspo #MuslimContentCreator #Hijabi #ModestFashion",
+        # Set 3: Muslim community & values
+        "#Muslims #MuslimCommunity #Ummah #IslamicPost #MuslimLife #Alhamdulillah #SubhanAllah #MashaAllah #Taqwa #Iman #Faith #Sabr #IslamicQuotes",
         
-        # Set 4: Knowledge & learning focus
-        "#LearnIslam #IslamicKnowledge #Tafsir #IslamicEducation #QuranicStudies #SeekKnowledge #IslamicTeachings #Hadith #Sunnah #IslamicHistory #DeenOverDunya",
+        # Set 4: Learning & reflection
+        "#LearnIslam #IslamicEducation #Tafsir #QuranicStudies #QuranMeaning #SeekKnowledge #IslamicTeachings #QuranReflection #UnderstandQuran #QuranicGuidance",
         
-        # Set 5: Spiritual & peace focus
-        "#PeaceInIslam #SpiritualJourney #IslamicPeace #InnerPeace #QuranicHealing #IslamicSpirituality #AllahsLove #TrustAllah #IslamicMindfulness #Dhikr",
+        # Set 5: Spiritual growth
+        "#SpiritualGrowth #IslamicReminder #AllahsWords #DivinGuidance #QuranicHealing #PeaceInIslam #TrustInAllah #Dhikr #Dua #IslamicSpirituality #FaithInAllah",
     ]
     
     # Pick random hashtag set for variety

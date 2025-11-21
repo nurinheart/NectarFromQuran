@@ -79,39 +79,39 @@ CAIRO_FONTS = {
         "size": 60,           # 🔤 ARABIC VERSE SIZE - reduced for less cluttered look
         "family": "Amiri", 
         "line_height": 2.0,   # More generous spacing for breathing room
-        "max_width": 880      # Standard width, not too narrow
+        "max_width": 940      # Increased to reduce excessive right padding
     },
     "heading": {
         "size": 40,           # 📌 HEADING SIZE - slightly larger for hierarchy
-        "family": "Product Sans",  # Product Sans for beautiful modern look
+        "family": "Montserrat",  # Montserrat for beautiful modern look (was mislabeled as Product Sans)
         "weight": "bold"
     },
     "translation": {
         "size": 45,           # 📝 TRANSLATION - smaller for elegance
-        "family": "Product Sans",  # Product Sans for consistency
+        "family": "Montserrat",  # Montserrat for consistency
         "max_width": 850,     # Narrower for better composition
         "line_height": 1.5    # Better line spacing
     },
     "tafsir": {
         "size": 42,           # 📖 TAFSIR - slightly smaller for hierarchy
-        "family": "Product Sans",  # Product Sans for consistency
+        "family": "Montserrat",  # Montserrat for consistency
         "max_width": 850,
         "line_height": 1.4
     },
     "example": {
         "size": 42,           # 💡 EXAMPLE - balanced size
-        "family": "Product Sans",  # Product Sans for consistency
+        "family": "Montserrat",  # Montserrat for consistency
         "max_width": 850,
         "line_height": 1.4
     },
     "reference": {
         "size": 30,           # 🔖 REFERENCE - smaller, more subtle
-        "family": "Product Sans",  # Product Sans for consistency
+        "family": "Montserrat",  # Montserrat for consistency
         "weight": "bold"      # Bold weight same as heading
     },
     "watermark": {
         "size": 25,           # 💧 WATERMARK - smaller, less intrusive
-        "family": "Product Sans",  # Product Sans for consistency
+        "family": "Montserrat",  # Montserrat for consistency
         "weight": "normal"    # Regular weight
     }
 }

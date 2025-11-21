@@ -182,6 +182,7 @@ class QuranPostGeneratorCairo:
     def split_text_by_height(self, text, max_height, font_family, font_size, max_width, line_height):
         """
         Split text into chunks that fit within max_height
+        Balances word distribution to avoid having one slide with many words and another with very few
         
         Returns:
             list of text chunks
@@ -205,6 +206,29 @@ class QuranPostGeneratorCairo:
         
         if current_chunk:
             chunks.append(' '.join(current_chunk))
+        
+        # Balance chunks: if last chunk has very few words (<3) and there are multiple chunks,
+        # redistribute words from the previous chunk to balance better
+        if len(chunks) >= 2:
+            last_chunk_words = chunks[-1].split()
+            if len(last_chunk_words) < 3:  # Last chunk is too small
+                prev_chunk_words = chunks[-2].split()
+                
+                # Only redistribute if previous chunk is large enough (has at least 5 words)
+                if len(prev_chunk_words) >= 5:
+                    # Calculate how many words to move to balance
+                    total_words = len(prev_chunk_words) + len(last_chunk_words)
+                    words_to_move = (total_words // 2) - len(last_chunk_words)
+                    
+                    if words_to_move > 0 and words_to_move <= len(prev_chunk_words) // 2:
+                        # Move words from end of previous chunk to beginning of last chunk
+                        moved_words = prev_chunk_words[-words_to_move:]
+                        prev_chunk_words = prev_chunk_words[:-words_to_move]
+                        last_chunk_words = moved_words + last_chunk_words
+                        
+                        # Update chunks with new distribution
+                        chunks[-2] = ' '.join(prev_chunk_words)
+                        chunks[-1] = ' '.join(last_chunk_words)
         
         return chunks if chunks else [text]
     
@@ -746,11 +770,14 @@ class QuranPostGeneratorCairo:
         handle_img = Image.new('RGBA', (IMAGE_WIDTH, IMAGE_HEIGHT), (0, 0, 0, 0))
         handle_paste = handle_layer.convert('RGBA')
         handle_crop = handle_paste.crop((0, (IMAGE_HEIGHT - 200) // 2, IMAGE_WIDTH, (IMAGE_HEIGHT + 200) // 2))
-        handle_img.paste(handle_crop, (0, 950))  # Changed from 1050 to 950 for proper spacing
+        handle_img.paste(handle_crop, (0, 1000))  # Position above watermark
         
         img = img.convert('RGBA')
         img.alpha_composite(handle_img)
         img = img.convert('RGB')
+        
+        # Add watermark at very bottom
+        img = self.add_watermark(img)
         
         return img
     

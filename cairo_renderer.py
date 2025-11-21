@@ -135,8 +135,9 @@ class CairoArabicRenderer:
         if len(words) == 0:
             return text
         
-        # Calculate how many words to highlight (at least 2-3, at most 30% of total)
-        num_to_highlight = max(2, min(int(len(words) * highlight_ratio), int(len(words) * 0.3)))
+        # Calculate how many words to highlight (at least 1, at most 30% of total)
+        # Use max(1, ...) instead of max(2, ...) to handle short texts gracefully
+        num_to_highlight = max(1, min(int(len(words) * highlight_ratio), int(len(words) * 0.3)))
         
         # Select random word indices to highlight
         # Comprehensive list of unworthy words that don't convey meaningful content
@@ -169,8 +170,9 @@ class CairoArabicRenderer:
         if len(highlightable_indices) == 0:
             return text
         
-        # Random selection - ensure at least 2-3 words are highlighted
-        num_to_highlight = max(2, min(num_to_highlight, len(highlightable_indices)))
+        # Random selection - ensure we don't try to highlight more words than available
+        # If we have fewer highlightable words, use what we have (min 1, max available)
+        num_to_highlight = max(1, min(num_to_highlight, len(highlightable_indices)))
         selected_indices = random.sample(highlightable_indices, num_to_highlight)
         
         # Build highlighted text

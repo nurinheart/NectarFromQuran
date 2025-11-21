@@ -38,10 +38,8 @@ def verify_files():
         'get_instagram_session.py',
         '.github/workflows/daily-posts.yml',
         '.gitignore',
+        'README.md',
         'QUICK_START.md',
-        'PRODUCTION_SETUP.md',
-        'PRE_FLIGHT_CHECKLIST.md',
-        'PRODUCTION_READY.md'
     ]
     
     all_exist = True

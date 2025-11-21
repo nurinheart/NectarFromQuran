@@ -118,66 +118,9 @@ class InstagramPoster:
         except Exception as e:
             print(f"❌ Connection test failed: {e}")
             return False
-
-
-def get_default_caption(hadith_text, source, category=None):
-    """Generate a good default caption with hadith text"""
-    caption = f'"{hadith_text}"\n\n'
-    caption += f"— Prophet Muhammad ﷺ\n"
-    caption += f"📖 {source} (Sahih)\n"
-    caption += f"✓ Verified from 2+ authentic sources\n\n"
     
-    if category:
-        caption += f"#{category} "
-    
-    return caption
-
-
-def get_default_hashtags():
-    """Get default hashtags for hadith posts"""
-    return [
-        "#Hadith",
-        "#Islam",
-        "#IslamicQuotes",
-        "#Muslim",
-        "#ProphetMuhammad",
-        "#IslamicReminders",
-        "#SahihBukhari",
-        "#Quran",
-        "#Allah",
-        "#Deen",
-        "#IslamicPost",
-        "#MuslimCommunity",
-        "#IslamicKnowledge",
-        "#Sunnah",
-        "#Dawah"
-    ]
-
-
-if __name__ == "__main__":
-    # Test the Instagram poster
-    print("=" * 60)
-    print("📱 INSTAGRAM AUTO-POSTER TEST")
-    print("=" * 60)
-    print()
-    
-    try:
-        poster = InstagramPoster()
-        poster.test_connection()
-        
-        print()
-        print("✅ Instagram poster is ready!")
-        print("💡 You can now use auto-posting in create_post.py")
-        
-    except Exception as e:
-        print()
-        print("❌ Setup incomplete. Please:")
-        print("   1. Create .env file (copy from .env.example)")
-        print("   2. Add your Instagram username and password")
-        print("   3. Run this test again")
-
     def post_carousel(self, image_paths, caption):
-        """Post multiple images as carousel (ROOT FIX: proper error handling)"""
+        """Post multiple images as carousel"""
         try:
             from pathlib import Path
             
@@ -291,3 +234,60 @@ if __name__ == "__main__":
             import traceback
             traceback.print_exc()
             return None
+
+
+def get_default_caption(hadith_text, source, category=None):
+    """Generate a good default caption with hadith text"""
+    caption = f'"{hadith_text}"\n\n'
+    caption += f"— Prophet Muhammad ﷺ\n"
+    caption += f"📖 {source} (Sahih)\n"
+    caption += f"✓ Verified from 2+ authentic sources\n\n"
+    
+    if category:
+        caption += f"#{category} "
+    
+    return caption
+
+
+def get_default_hashtags():
+    """Get default hashtags for hadith posts"""
+    return [
+        "#Hadith",
+        "#Islam",
+        "#IslamicQuotes",
+        "#Muslim",
+        "#ProphetMuhammad",
+        "#IslamicReminders",
+        "#SahihBukhari",
+        "#Quran",
+        "#Allah",
+        "#Deen",
+        "#IslamicPost",
+        "#MuslimCommunity",
+        "#IslamicKnowledge",
+        "#Sunnah",
+        "#Dawah"
+    ]
+
+
+if __name__ == "__main__":
+    # Test the Instagram poster
+    print("=" * 60)
+    print("📱 INSTAGRAM AUTO-POSTER TEST")
+    print("=" * 60)
+    print()
+    
+    try:
+        poster = InstagramPoster()
+        poster.test_connection()
+        
+        print()
+        print("✅ Instagram poster is ready!")
+        print("💡 You can now use auto-posting in create_post.py")
+        
+    except Exception as e:
+        print()
+        print("❌ Setup incomplete. Please:")
+        print("   1. Create .env file (copy from .env.example)")
+        print("   2. Add your Instagram username and password")
+        print("   3. Run this test again")

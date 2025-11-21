@@ -79,7 +79,7 @@ CAIRO_FONTS = {
         "size": 60,           # 🔤 ARABIC VERSE SIZE - reduced for less cluttered look
         "family": "Amiri", 
         "line_height": 2.0,   # More generous spacing for breathing room
-        "max_width": 940      # Increased to reduce excessive right padding
+        "max_width": 980      # Increased further to minimize right padding
     },
     "heading": {
         "size": 40,           # 📌 HEADING SIZE - slightly larger for hierarchy

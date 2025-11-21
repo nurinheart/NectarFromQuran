@@ -119,12 +119,17 @@ class CairoArabicRenderer:
         text_width = pango.units_to_double(text_width)
         text_height = pango.units_to_double(text_height)
         
-        # Calculate position - CENTER the layout box naturally
-        # This gives Arabic text breathing room and looks less cluttered
+        # Calculate position
         padding = 100  # Standard padding from edges
         
-        # Always center the layout box horizontally
-        x = (self.width - max_width) / 2
+        # For right-aligned text (Arabic), position the layout box to minimize right padding
+        # For left/center aligned, center the box horizontally
+        if align == 'right':
+            # Push text box to the right with minimal right padding (40px)
+            x = self.width - max_width - 40
+        else:
+            # Center the layout box horizontally for left/center alignment
+            x = (self.width - max_width) / 2
         
         # Vertically center the text
         y = (self.height - text_height) / 2

@@ -33,7 +33,7 @@ class InstagramPoster:
             self.login()
     
     def login(self):
-        """Login to Instagram"""
+        """Login to Instagram with auto-recovery"""
         session_data = os.getenv('INSTAGRAM_SESSION_DATA')
         
         if session_data:
@@ -46,29 +46,35 @@ class InstagramPoster:
                 return
             except Exception as e:
                 print(f"⚠️  Session login failed: {e}")
-                print("   Please generate a new session.json and update the INSTAGRAM_SESSION_DATA secret.")
-                raise
+                print("🔄 Attempting auto-recovery with username/password...")
+                # Fall through to password login
         
         if not self.username or not self.password:
-            raise ValueError("❌ Instagram credentials not set! Please set INSTAGRAM_SESSION_DATA secret.")
+            raise ValueError("❌ Instagram credentials not set! Set INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD in GitHub secrets.")
         
         try:
             print(f"🔐 Logging in as @{self.username}...")
             self.client.login(self.username, self.password)
             
-            # Save session for future use
+            # Save new session
             self.client.dump_settings(self.session_file)
-            print("✅ Logged in successfully!")
+            
+            # Also save to update GitHub secret (print for manual update)
+            new_session = self.client.get_settings()
+            print("✅ Logged in successfully! New session generated.")
+            print("\n" + "="*60)
+            print("📋 NEW SESSION DATA (update INSTAGRAM_SESSION_DATA secret):")
+            print("="*60)
+            print(json.dumps(new_session, indent=2))
+            print("="*60)
             
         except TwoFactorRequired:
-            code = input("Enter 2FA code: ")
-            self.client.login(self.username, self.password, verification_code=code)
-            self.client.dump_settings(self.session_file)
-            print("✅ Logged in successfully with 2FA!")
+            print("❌ 2FA is enabled. Please disable it temporarily or set up app-specific password.")
+            raise
             
         except ChallengeRequired:
             print("⚠️  Instagram security challenge required.")
-            print("Please login manually via Instagram app and try again.")
+            print("Please login manually via Instagram app and try again in 24 hours.")
             raise
             
         except Exception as e:

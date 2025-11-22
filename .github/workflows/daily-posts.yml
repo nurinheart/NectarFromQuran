@@ -57,6 +57,7 @@ jobs:
     - name: Generate and post Quran verse
       env:
         INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
         INSTAGRAM_SESSION_DATA: ${{ secrets.INSTAGRAM_SESSION_DATA }}
       run: |
         python3 create_post.py

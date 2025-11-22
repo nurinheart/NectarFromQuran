@@ -162,13 +162,15 @@ class InstagramPoster:
             
             print(f"✅ Carousel posted successfully!")
             print(f"🔗 Media PK: {media.pk}")
+            print(f"🔗 Media Code: {media.code}")
             
             # Cleanup temporary JPG files
             for i, (orig_path, jpg_path) in enumerate(zip(paths, jpg_paths)):
                 if orig_path != jpg_path and jpg_path.exists():
                     jpg_path.unlink()
             
-            return media.pk
+            # Return both PK and code as dict
+            return {'pk': media.pk, 'code': media.code}
             
         except Exception as e:
             print(f"❌ Carousel post failed: {e}")
@@ -218,19 +220,38 @@ class InstagramPoster:
             y_offset = (story_height - carousel_img.height) // 2
             story_img.paste(carousel_img, (0, y_offset))
             
-            # Add "Tap to view full post →" text at bottom with better styling
+            # Add "Tap to view full post" text at bottom with better styling
             draw = ImageDraw.Draw(story_img)
             
+            # Use Montserrat font for consistency with posts
             try:
-                font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 48)
-                font_small = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 36)
+                # Try to find Montserrat font (bundled in project)
+                montserrat_paths = [
+                    "fonts/Montserrat-Bold.ttf",
+                    "fonts/Montserrat-Regular.ttf",
+                    "/System/Library/Fonts/SFCompact.ttf",  # macOS fallback
+                    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"  # Linux fallback
+                ]
+                
+                font_large = None
+                font_small = None
+                
+                for font_path in montserrat_paths:
+                    if os.path.exists(font_path):
+                        font_large = ImageFont.truetype(font_path, 70)  # Much larger
+                        font_small = ImageFont.truetype(font_path, 55)  # Much larger
+                        break
+                
+                if not font_large:
+                    font_large = ImageFont.load_default()
+                    font_small = ImageFont.load_default()
             except:
                 font_large = ImageFont.load_default()
                 font_small = ImageFont.load_default()
             
-            # Main text
-            main_text = "New Post ✨"
-            sub_text = "Tap to view →"
+            # Main text - removed emoji to avoid box rendering
+            main_text = "New Post"
+            sub_text = "Tap to view"
             
             # Get text dimensions
             bbox_main = draw.textbbox((0, 0), main_text, font=font_large)

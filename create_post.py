@@ -158,15 +158,16 @@ def main():
         caption = generate_dynamic_caption(verse_info)
         
         # Post carousel to feed
-        media_pk = poster.post_carousel(slide_paths, caption)
+        media_result = poster.post_carousel(slide_paths, caption)
         
-        if media_pk:
+        if media_result:
             print(f"\n✅ Successfully posted to feed!")
-            print(f"🔗 Post ID: {media_pk}")
+            print(f"🔗 Post ID: {media_result['pk']}")
+            print(f"🔗 Post Code: {media_result['code']}")
             
-            # Share to story with "New Post" text
+            # Share to story with "New Post" text - use CODE not PK for URL
             print(f"\n📤 Sharing to story...")
-            post_url = f"https://www.instagram.com/p/{media_pk}/"
+            post_url = f"https://www.instagram.com/p/{media_result['code']}/"
             story_pk = poster.share_to_story(slide_paths[0], post_url)
             
             if story_pk:

@@ -33,12 +33,12 @@ class InstagramPoster:
             self.login()
     
     def login(self):
-        """Login to Instagram - reuses session until it truly expires"""
+        """Login to Instagram with auto-recovery"""
         session_data = os.getenv('INSTAGRAM_SESSION_DATA')
         
         if session_data:
             try:
-                print("🔐 Attempting to reuse existing session...")
+                print("🔐 Attempting to log in using session data...")
                 session_dict = json.loads(session_data)
                 self.client.set_settings(session_dict)
                 
@@ -51,21 +51,13 @@ class InstagramPoster:
                 
                 if sessionid:
                     self.client.login_by_sessionid(sessionid)
-                    
-                    # VERIFY session is actually valid by making a test API call
-                    try:
-                        self.client.account_info()  # Lightweight test call
-                        print("✅ Session is VALID! Reusing existing session (no new login).")
-                        return  # SUCCESS - keep using this session
-                    except Exception as verify_error:
-                        print(f"⚠️  Session verification failed: {verify_error}")
-                        print("🔄 Session truly expired, creating new one...")
-                        # Fall through to password login
+                    print("✅ Logged in successfully using session data.")
+                    return
                 else:
                     raise ValueError("No sessionid found in session data")
                     
             except Exception as e:
-                print(f"⚠️  Session load failed: {e}")
+                print(f"⚠️  Session login failed: {e}")
                 print("🔄 Attempting auto-recovery with username/password...")
                 # Fall through to password login
         
@@ -73,7 +65,7 @@ class InstagramPoster:
             raise ValueError("❌ Instagram credentials not set! Set INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD in GitHub secrets.")
         
         try:
-            print(f"🔐 Creating NEW session with password login as @{self.username}...")
+            print(f"🔐 Logging in as @{self.username}...")
             self.client.login(self.username, self.password)
             
             # Get session immediately after login
@@ -82,15 +74,16 @@ class InstagramPoster:
             # Save new session to file
             self.client.dump_settings(self.session_file)
             
-            print("✅ NEW session created successfully!")
+            # Relogin using the new session to ensure it's active
+            self.client.set_settings(new_session)
+            self.client.login_by_sessionid(self.client.sessionid)
+            
+            print("✅ Logged in successfully! New session generated.")
             print("\n" + "="*60)
-            print("📋 COPY THIS TO INSTAGRAM_SESSION_DATA SECRET:")
+            print("📋 NEW SESSION DATA (update INSTAGRAM_SESSION_DATA secret):")
             print("="*60)
             print(json.dumps(new_session, indent=2))
             print("="*60)
-            print("\n⚠️  IMPORTANT: Copy the JSON above to INSTAGRAM_SESSION_DATA secret")
-            print("   This session will be reused for ~2 weeks until it expires!")
-            print("   Update at: https://github.com/nurinheart/NectarFromQuran/settings/secrets/actions\n")
             
         except TwoFactorRequired:
             print("❌ 2FA is enabled. Please disable it temporarily or set up app-specific password.")

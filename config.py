@@ -42,7 +42,7 @@ THEMES = {
         "arabic_color": "#FFD700",  # Gold for Arabic - elegant contrast
         "heading_color": "#FFD700",  # White for modern minimalist look
         "source_color": "#E8E8E8",  # Softer light gray - less harsh
-        "accent_color": "#FFD700",
+        "accent_color": "#1A7A8A",
     },
     "sage_cream": {
         "name": "Sage & Cream",
@@ -64,18 +64,18 @@ THEMES = {
     }
 }
 
-DEFAULT_THEME = "elegant_black"
+DEFAULT_THEME = "sage_cream"
 
 # ===== THEME ROTATION =====
 # Set to True to rotate through themes (one theme per post)
 # Set to False to use only DEFAULT_THEME
-ENABLE_THEME_ROTATION = False
+ENABLE_THEME_ROTATION = True
 ROTATION_THEMES = ["elegant_black", "sage_cream", "teal_gold"]  # Order of rotation
 
 # ===== HIGHLIGHTING SETTINGS =====
 # Control keyword highlighting in translation, tafsir, and example slides
 ENABLE_HIGHLIGHTING = True  # Set to False to disable all highlighting
-HIGHLIGHT_RATIO = 0.15      # Percentage of words to highlight (0.15 = 15%)
+HIGHLIGHT_RATIO = 0.8      # Percentage of words to highlight (0.15 = 15%)
 USE_ACCENT_COLOR_FOR_HIGHLIGHTS = True  # True = use theme accent color, False = always gold
 
 # ===== LAYOUT SETTINGS =====

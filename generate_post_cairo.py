@@ -16,7 +16,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from config import *
 from quran_data import get_all_verses
-from quran_api import QuranAPI
+from multi_api_quran import QuranAPI
 from cairo_renderer import CairoArabicRenderer
 
 # Set library paths for Cairo/Pango based on OS

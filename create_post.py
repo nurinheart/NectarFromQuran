@@ -1,6 +1,7 @@
 """
 Create and post Quranic verse to Instagram
 ✅ Auto-fetches authentic tafsir from APIs (NEVER makes up content)
+✅ Multi-API fallback system (Quran.com → AlQuran.cloud → Quran-API.ir)
 ✅ Posts to feed + shares to story with "New Post" text
 ✅ Auto-cleanup of old files (7 days)
 ✅ Dynamic captions with trendy hashtags

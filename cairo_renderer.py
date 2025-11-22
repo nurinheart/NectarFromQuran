@@ -125,8 +125,8 @@ class CairoArabicRenderer:
         # For right-aligned text (Arabic), position the layout box to minimize right padding
         # For left/center aligned, center the box horizontally
         if align == 'right':
-            # Push text box to the right with minimal right padding (40px)
-            x = self.width - max_width - 40
+            # Push text box to the right with minimal right padding (20px - reduced from 40px)
+            x = self.width - max_width - 20
         else:
             # Center the layout box horizontally for left/center alignment
             x = (self.width - max_width) / 2

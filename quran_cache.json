@@ -173,5 +173,14 @@
     "surah_number": 1,
     "ayah_number": 5,
     "source": "AlQuran.cloud API"
+  },
+  "1:6": {
+    "arabic": "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+    "translation": "Guide us to the straight path -",
+    "surah_name": "Al-Faatiha",
+    "surah_name_arabic": "سُورَةُ ٱلْفَاتِحَةِ",
+    "surah_number": 1,
+    "ayah_number": 6,
+    "source": "AlQuran.cloud API"
   }
 }

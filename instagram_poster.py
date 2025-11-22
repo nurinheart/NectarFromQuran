@@ -165,6 +165,13 @@ class InstagramPoster:
             print(f"🔗 Media Code: {media.code}")
             print(f"🔗 Post URL: https://www.instagram.com/p/{media.code}/")
             
+            # Auto-like the post (helps with engagement)
+            try:
+                self.client.media_like(media.pk)
+                print(f"👍 Auto-liked the post")
+            except Exception as e:
+                print(f"⚠️  Could not auto-like: {e}")
+            
             # Cleanup temporary JPG files
             for i, (orig_path, jpg_path) in enumerate(zip(paths, jpg_paths)):
                 if orig_path != jpg_path and jpg_path.exists():
@@ -225,14 +232,15 @@ class InstagramPoster:
             
             try:
                 # Try Montserrat first (professional, clean)
-                font_large = ImageFont.truetype("fonts/Montserrat-Bold.ttf", 72)  # Much larger!
-                font_small = ImageFont.truetype("fonts/Montserrat-Regular.ttf", 56)  # Much larger!
+                font_large = ImageFont.truetype("fonts/Montserrat-Bold.ttf", 100)  # EXTRA LARGE for visibility!
+                font_small = ImageFont.truetype("fonts/Montserrat-Regular.ttf", 75)  # EXTRA LARGE for visibility!
             except:
                 try:
                     # Fallback to Helvetica
-                    font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 72)
-                    font_small = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 56)
+                    font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 100)
+                    font_small = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 75)
                 except:
+                    # Last resort - system default but scaled up
                     font_large = ImageFont.load_default()
                     font_small = ImageFont.load_default()
             
@@ -302,6 +310,81 @@ class InstagramPoster:
             print(f"❌ Story post failed: {e}")
             import traceback
             traceback.print_exc()
+            return None
+    
+    def send_dm_to_followers(self, message, max_recipients=50):
+        """
+        Send DM to recent followers
+        
+        WARNING: Instagram heavily rate-limits DMs. Use sparingly!
+        Recommended: max 20-30 DMs per day to avoid restrictions
+        
+        Args:
+            message: Text message to send
+            max_recipients: Maximum number of followers to message (default 50)
+        
+        Returns:
+            Number of successful DMs sent
+        """
+        try:
+            print(f"📬 Sending DMs to up to {max_recipients} followers...")
+            
+            # Get follower list
+            user_id = self.client.user_id_from_username(self.username)
+            followers = self.client.user_followers(user_id, amount=max_recipients)
+            
+            successful = 0
+            failed = 0
+            
+            for follower_id, follower_info in list(followers.items())[:max_recipients]:
+                try:
+                    # Send DM
+                    self.client.direct_send(message, [follower_id])
+                    successful += 1
+                    print(f"✅ Sent to @{follower_info.username}")
+                    
+                    # Rate limiting: wait 2-3 seconds between messages
+                    import time
+                    import random
+                    time.sleep(random.uniform(2, 3))
+                    
+                except Exception as e:
+                    failed += 1
+                    print(f"❌ Failed to send to @{follower_info.username}: {e}")
+            
+            print(f"\n📊 DM Summary: {successful} sent, {failed} failed")
+            return successful
+            
+        except Exception as e:
+            print(f"❌ DM broadcast failed: {e}")
+            return 0
+    
+    def create_broadcast_channel(self, channel_name, description=""):
+        """
+        Create an Instagram broadcast channel
+        
+        Note: Broadcast channels are a newer Instagram feature.
+        They allow one-to-many messaging (like Telegram channels)
+        
+        Args:
+            channel_name: Name of the broadcast channel
+            description: Channel description
+        
+        Returns:
+            Channel ID if successful, None otherwise
+        """
+        try:
+            print(f"📢 Creating broadcast channel: {channel_name}")
+            
+            # Note: instagrapi may not have full broadcast channel support yet
+            # This is a placeholder for when the API catches up
+            print("⚠️  Broadcast channels require Instagram app for now")
+            print("   Create manually: Profile → Menu → Broadcast Channel")
+            
+            return None
+            
+        except Exception as e:
+            print(f"❌ Channel creation failed: {e}")
             return None
 
 

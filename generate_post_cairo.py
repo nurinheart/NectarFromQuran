@@ -528,8 +528,12 @@ class QuranPostGeneratorCairo:
         img = img.convert('RGB')
         
         # Render tafsir with Cairo
-        # Add quote symbols for better presentation
-        tafsir_text = f'"{verse_data["tafsir"]}"'
+        # Quote marks are added in generate_post() for multi-slide handling
+        # Single slides get quotes here, multi-slides get them on first/last
+        tafsir_text = verse_data["tafsir"]
+        if not (tafsir_text.startswith('"') or tafsir_text.endswith('"')):
+            # Only add quotes if not already present (single slide case)
+            tafsir_text = f'"{tafsir_text}"'
         tafsir_layer = self.cairo_renderer.render_english_text(
             text=tafsir_text,
             font_family=tafsir_config['family'],
@@ -931,8 +935,18 @@ class QuranPostGeneratorCairo:
                     verse_data['tafsir'], max_text_height, tafsir_config['family'],
                     tafsir_config['size'], tafsir_config['max_width'], tafsir_config.get('line_height', 1.6)
                 )
-                for chunk in chunks:
-                    slides.append(self.create_slide_tafsir({**verse_data, 'tafsir': chunk}))
+                # Add opening quote to first chunk, closing quote to last chunk
+                for i, chunk in enumerate(chunks):
+                    if i == 0:
+                        # First slide: opening quote
+                        formatted_chunk = f'"{chunk}'
+                    elif i == len(chunks) - 1:
+                        # Last slide: closing quote
+                        formatted_chunk = f'{chunk}"'
+                    else:
+                        # Middle slides: no quotes
+                        formatted_chunk = chunk
+                    slides.append(self.create_slide_tafsir({**verse_data, 'tafsir': formatted_chunk}))
                 print(f"✅ Created {len(chunks)} tafsir slides (showing FULL tafsir)")
             else:
                 slides.append(self.create_slide_tafsir(verse_data))

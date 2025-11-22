@@ -8,8 +8,11 @@ venv/
 env/
 ENV/
 
-# Temporary outputs
+# Temporary outputs (not archived)
 output/*.png
+
+# Archive folder is TRACKED (permanent storage in git)
+# !archive/
 
 # Session files (sensitive)
 session.json

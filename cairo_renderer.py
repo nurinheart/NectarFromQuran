@@ -144,10 +144,10 @@ class CairoArabicRenderer:
         # Convert Cairo surface to PIL Image
         return self._surface_to_pil(surface)
     
-    def highlight_random_words(self, text, theme_color="#FFD700", highlight_ratio=0.15):
+    def highlight_random_words(self, text, theme_color="#FFD700", max_words=4):
         """
         Randomly highlight words in text for visual interest
-        Highlights approximately highlight_ratio of words (default 15%)
+        Highlights up to max_words important words (default 4)
         Returns text with Pango markup for bold and colored highlights
         """
         import random
@@ -158,9 +158,9 @@ class CairoArabicRenderer:
         if len(words) == 0:
             return text
         
-        # Calculate how many words to highlight (at least 1, at most 30% of total)
-        # Use max(1, ...) instead of max(2, ...) to handle short texts gracefully
-        num_to_highlight = max(1, min(int(len(words) * highlight_ratio), int(len(words) * 0.3)))
+        # Use fixed maximum number of words, not percentage
+        # This ensures consistent highlighting regardless of text length
+        num_to_highlight = min(max_words, len(words))
         
         # Select random word indices to highlight
         # Comprehensive list of unworthy words that don't convey meaningful content
@@ -290,12 +290,12 @@ class CairoArabicRenderer:
         # Apply random word highlighting if enabled
         if highlight_keywords:
             # Import config to get settings
-            from config import ENABLE_HIGHLIGHTING, HIGHLIGHT_RATIO, USE_ACCENT_COLOR_FOR_HIGHLIGHTS
+            from config import ENABLE_HIGHLIGHTING, HIGHLIGHT_MAX_WORDS, USE_ACCENT_COLOR_FOR_HIGHLIGHTS
             
             if ENABLE_HIGHLIGHTING:
                 # Use theme accent color or always gold based on config
                 highlight_color = accent_color if USE_ACCENT_COLOR_FOR_HIGHLIGHTS else "#FFD700"
-                highlighted_text = self.highlight_random_words(text, theme_color=highlight_color, highlight_ratio=HIGHLIGHT_RATIO)
+                highlighted_text = self.highlight_random_words(text, theme_color=highlight_color, max_words=HIGHLIGHT_MAX_WORDS)
                 # Use pango_layout_set_markup for markup support
                 pango.pango.pango_layout_set_markup(layout._pointer, highlighted_text.encode('utf-8'), -1)
             else:

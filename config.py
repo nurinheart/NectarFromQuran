@@ -75,7 +75,7 @@ ROTATION_THEMES = ["elegant_black", "sage_cream", "teal_gold"]  # Order of rotat
 # ===== HIGHLIGHTING SETTINGS =====
 # Control keyword highlighting in translation, tafsir, and example slides
 ENABLE_HIGHLIGHTING = True  # Set to False to disable all highlighting
-HIGHLIGHT_RATIO = 0.8      # Percentage of words to highlight (0.15 = 15%)
+HIGHLIGHT_MAX_WORDS = 4     # Maximum number of words to highlight per slide (3-5 recommended)
 USE_ACCENT_COLOR_FOR_HIGHLIGHTS = True  # True = use theme accent color, False = always gold
 
 # ===== LAYOUT SETTINGS =====

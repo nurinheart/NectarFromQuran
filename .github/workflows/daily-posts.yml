@@ -60,25 +60,44 @@ jobs:
       run: |
         python3 create_post.py
     
-    - name: Commit posted verses tracking file
+    - name: Archive generated images to git (permanent storage)
+      if: success()
+      run: |
+        # Create archive directory with date-based structure
+        ARCHIVE_DIR="archive/$(date +%Y/%m)"
+        mkdir -p "$ARCHIVE_DIR"
+        
+        # Copy generated images to archive
+        cp output/*.png "$ARCHIVE_DIR/" 2>/dev/null || true
+        
+        # Create archive log
+        echo "Archived on: $(date)" >> "$ARCHIVE_DIR/log.txt"
+        echo "Images: $(ls output/*.png 2>/dev/null | wc -l)" >> "$ARCHIVE_DIR/log.txt"
+    
+    - name: Commit posted verses and archived images
       if: success()
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
+        
+        # Add tracking file and archive
         git add posted_verses.json
-        git diff --quiet && git diff --staged --quiet || git commit -m "Track posted verse [skip ci]"
+        git add archive/ 2>/dev/null || true
+        
+        # Commit if there are changes
+        git diff --quiet && git diff --staged --quiet || git commit -m "📝 Track posted verse + Archive images [skip ci]"
     
-    - name: Push changes
+    - name: Push changes to GitHub
       if: success()
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: ${{ github.ref }}
     
-    - name: Upload generated images as artifacts (optional)
+    - name: Upload to workflow artifacts (7-day retention)
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: quran-posts
+        name: quran-posts-${{ github.run_number }}
         path: output/*.png
         retention-days: 7

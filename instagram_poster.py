@@ -19,18 +19,10 @@ class InstagramPoster:
         self.password = os.getenv('INSTAGRAM_PASSWORD')
         self.session_file = os.getenv('SESSION_FILE', 'instagram_session.json')
         self.client = Client()
+        self.client.delay_range = [1, 3]  # Human-like delays
         
-        # Load session if exists
-        if os.path.exists(self.session_file):
-            try:
-                self.client.load_settings(self.session_file)
-                self.client.login(self.username, self.password)
-                print("✅ Logged in using saved session")
-            except:
-                print("⚠️  Session expired, logging in fresh...")
-                self.login()
-        else:
-            self.login()
+        # Always use the login method for proper session management
+        self.login()
     
     def login(self):
         """Login to Instagram - reuses session until it truly expires"""
@@ -76,13 +68,17 @@ class InstagramPoster:
             print(f"🔐 Creating NEW session with password login as @{self.username}...")
             self.client.login(self.username, self.password)
             
-            # Get session immediately after login
-            new_session = self.client.get_settings()
+            # Verify login worked
+            try:
+                account_info = self.client.account_info()
+                print(f"✅ NEW session created successfully! Logged in as @{account_info.username}")
+            except Exception as verify_err:
+                raise Exception(f"Login succeeded but verification failed: {verify_err}")
             
-            # Save new session to file
+            # Get and save session AFTER verifying it works
+            new_session = self.client.get_settings()
             self.client.dump_settings(self.session_file)
             
-            print("✅ NEW session created successfully!")
             print("\n" + "="*60)
             print("📋 COPY THIS TO INSTAGRAM_SESSION_DATA SECRET:")
             print("="*60)
@@ -91,6 +87,8 @@ class InstagramPoster:
             print("\n⚠️  IMPORTANT: Copy the JSON above to INSTAGRAM_SESSION_DATA secret")
             print("   This session will be reused for ~2 weeks until it expires!")
             print("   Update at: https://github.com/nurinheart/NectarFromQuran/settings/secrets/actions\n")
+            
+            # Client is already logged in and ready to use - don't do anything else!
             
         except TwoFactorRequired:
             print("❌ 2FA is enabled. Please disable it temporarily or set up app-specific password.")

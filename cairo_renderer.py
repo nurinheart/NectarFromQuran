@@ -149,6 +149,8 @@ class CairoArabicRenderer:
         Randomly highlight words in text for visual interest
         Highlights up to max_words important words (default 4)
         Returns text with Pango markup for bold and colored highlights
+        
+        NOTE: Text must NOT contain existing markup - this function adds markup
         """
         import random
         
@@ -239,7 +241,8 @@ class CairoArabicRenderer:
     def render_english_text(self, text, font_family="Product Sans", font_size=40,
                           bg_color=(245, 242, 237), text_color=(80, 60, 40),
                           max_width=900, alignment="left", transparent_bg=False, line_height=1.6,
-                          highlight_keywords=False, accent_color="#FFD700"):
+                          highlight_keywords=False, accent_color="#FFD700", 
+                          add_opening_quote=False, add_closing_quote=False):
         """
         Render English text (for translations, tafsir, examples)
         
@@ -287,7 +290,8 @@ class CairoArabicRenderer:
         font_description = pango.pango.pango_font_description_from_string(font_desc_str.encode('utf-8'))
         layout._set_font_description(pango.FontDescription(font_description))
         
-        # Apply random word highlighting if enabled
+        # Apply random word highlighting FIRST (before adding quotes)
+        # This avoids escaping issues with markup
         if highlight_keywords:
             # Import config to get settings
             from config import ENABLE_HIGHLIGHTING, HIGHLIGHT_MAX_WORDS, USE_ACCENT_COLOR_FOR_HIGHLIGHTS
@@ -295,11 +299,23 @@ class CairoArabicRenderer:
             if ENABLE_HIGHLIGHTING:
                 # Use theme accent color or always gold based on config
                 highlight_color = accent_color if USE_ACCENT_COLOR_FOR_HIGHLIGHTS else "#FFD700"
-                highlighted_text = self.highlight_random_words(text, theme_color=highlight_color, max_words=HIGHLIGHT_MAX_WORDS)
-                # Use pango_layout_set_markup for markup support
-                pango.pango.pango_layout_set_markup(layout._pointer, highlighted_text.encode('utf-8'), -1)
-            else:
-                layout._set_text(text)
+                text = self.highlight_random_words(text, theme_color=highlight_color, max_words=HIGHLIGHT_MAX_WORDS)
+                # Now text has highlighting markup
+        
+        # Add stylish bold quotes AFTER highlighting (so quotes aren't highlighted)
+        if add_opening_quote:
+            # Large bold opening quote
+            text = f'<span size="x-large" weight="bold">"</span>{text}'
+        if add_closing_quote:
+            # Large bold closing quote
+            text = f'{text}<span size="x-large" weight="bold">"</span>'
+        
+        # Check if we have any markup to render
+        has_markup = '<span' in text or '<b>' in text or '<i>' in text
+        
+        # Set the text with markup if present
+        if has_markup:
+            pango.pango.pango_layout_set_markup(layout._pointer, text.encode('utf-8'), -1)
         else:
             layout._set_text(text)
         

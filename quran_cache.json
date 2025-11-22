@@ -182,5 +182,50 @@
     "surah_number": 1,
     "ayah_number": 6,
     "source": "AlQuran.cloud API"
+  },
+  "1:7": {
+    "arabic": "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+    "translation": "The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray.",
+    "surah_name": "Al-Faatiha",
+    "surah_name_arabic": "سُورَةُ ٱلْفَاتِحَةِ",
+    "surah_number": 1,
+    "ayah_number": 7,
+    "source": "AlQuran.cloud API"
+  },
+  "2:1": {
+    "arabic": " الٓمٓ",
+    "translation": "Alif, Lam, Meem.",
+    "surah_name": "Al-Baqarah",
+    "surah_name_arabic": "البقرة",
+    "surah_number": 2,
+    "ayah_number": 1,
+    "source": "Quran.com API (Arabic) + AlQuran.cloud (Translation)"
+  },
+  "2:2": {
+    "arabic": "ذَٰلِكَ ٱلْكِتَـٰبُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ",
+    "translation": "This is the Book about which there is no doubt, a guidance for those conscious of Allah -",
+    "surah_name": "Al-Baqarah",
+    "surah_name_arabic": "البقرة",
+    "surah_number": 2,
+    "ayah_number": 2,
+    "source": "Quran.com API (Arabic) + AlQuran.cloud (Translation)"
+  },
+  "2:3": {
+    "arabic": "ٱلَّذِينَ يُؤْمِنُونَ بِٱلْغَيْبِ وَيُقِيمُونَ ٱلصَّلَوٰةَ وَمِمَّا رَزَقْنَـٰهُمْ يُنفِقُونَ",
+    "translation": "Who believe in the unseen, establish prayer, and spend out of what We have provided for them,",
+    "surah_name": "Al-Baqarah",
+    "surah_name_arabic": "البقرة",
+    "surah_number": 2,
+    "ayah_number": 3,
+    "source": "Quran.com API (Arabic) + AlQuran.cloud (Translation)"
+  },
+  "2:4": {
+    "arabic": "وَٱلَّذِينَ يُؤْمِنُونَ بِمَآ أُنزِلَ إِلَيْكَ وَمَآ أُنزِلَ مِن قَبْلِكَ وَبِٱلْـَٔاخِرَةِ هُمْ يُوقِنُونَ",
+    "translation": "And who believe in what has been revealed to you, [O Muhammad], and what was revealed before you, and of the Hereafter they are certain [in faith].",
+    "surah_name": "Al-Baqarah",
+    "surah_name_arabic": "البقرة",
+    "surah_number": 2,
+    "ayah_number": 4,
+    "source": "Quran.com API (Arabic) + AlQuran.cloud (Translation)"
   }
 }

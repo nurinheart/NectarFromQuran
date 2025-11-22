@@ -528,12 +528,24 @@ class QuranPostGeneratorCairo:
         img = img.convert('RGB')
         
         # Render tafsir with Cairo
-        # Quote marks are added in generate_post() for multi-slide handling
-        # Single slides get quotes here, multi-slides get them on first/last
+        # Handle quote marks for both single and multi-slide cases
         tafsir_text = verse_data["tafsir"]
-        if not (tafsir_text.startswith('"') or tafsir_text.endswith('"')):
-            # Only add quotes if not already present (single slide case)
-            tafsir_text = f'"{tafsir_text}"'
+        
+        # Check for quote markers added in generate_post()
+        has_open_marker = tafsir_text.startswith('__QUOTE_OPEN__')
+        has_close_marker = tafsir_text.endswith('__QUOTE_CLOSE__')
+        
+        # Remove markers
+        if has_open_marker:
+            tafsir_text = tafsir_text.replace('__QUOTE_OPEN__', '')
+        if has_close_marker:
+            tafsir_text = tafsir_text.replace('__QUOTE_CLOSE__', '')
+        
+        # Determine if we need to add quotes
+        # Single slide: both quotes. First slide: opening only. Last slide: closing only. Middle: none
+        add_opening = has_open_marker or (not has_open_marker and not has_close_marker)
+        add_closing = has_close_marker or (not has_open_marker and not has_close_marker)
+        
         tafsir_layer = self.cairo_renderer.render_english_text(
             text=tafsir_text,
             font_family=tafsir_config['family'],
@@ -545,7 +557,9 @@ class QuranPostGeneratorCairo:
             highlight_keywords=True,
             transparent_bg=True,
             line_height=tafsir_config.get('line_height', 1.6),
-            accent_color=self.theme['accent_color']  # Use theme accent color
+            accent_color=self.theme['accent_color'],  # Use theme accent color
+            add_opening_quote=add_opening,  # Pass quote flags
+            add_closing_quote=add_closing
         )
         
         # Composite onto background
@@ -935,14 +949,15 @@ class QuranPostGeneratorCairo:
                     verse_data['tafsir'], max_text_height, tafsir_config['family'],
                     tafsir_config['size'], tafsir_config['max_width'], tafsir_config.get('line_height', 1.6)
                 )
-                # Add opening quote to first chunk, closing quote to last chunk
+                # Add stylish opening quote to first chunk, closing quote to last chunk
+                # Mark chunks with special prefix so renderer knows to add quotes
                 for i, chunk in enumerate(chunks):
                     if i == 0:
-                        # First slide: opening quote
-                        formatted_chunk = f'"{chunk}'
+                        # First slide: will get opening quote in renderer
+                        formatted_chunk = f'__QUOTE_OPEN__{chunk}'
                     elif i == len(chunks) - 1:
-                        # Last slide: closing quote
-                        formatted_chunk = f'{chunk}"'
+                        # Last slide: will get closing quote in renderer
+                        formatted_chunk = f'{chunk}__QUOTE_CLOSE__'
                     else:
                         # Middle slides: no quotes
                         formatted_chunk = chunk

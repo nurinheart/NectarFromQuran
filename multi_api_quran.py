@@ -168,32 +168,37 @@ class MultiAPIQuranFetcher:
         return None
     
     def _fetch_quran_com(self, surah: int, ayah: int) -> Optional[Dict]:
-        """Fetch from Quran.com API v4"""
+        """
+        Fetch from Quran.com API v4
+        
+        NOTE: Quran.com API v4 structure changed - now uses combined endpoint
+        Must specify both text_uthmani field AND translation resource
+        """
         verse_key = f"{surah}:{ayah}"
         
-        # Fetch Arabic text (Uthmani script)
-        arabic_url = f"https://api.quran.com/api/v4/verses/by_key/{verse_key}"
-        arabic_params = {'fields': 'text_uthmani'}
+        # Single combined request for both Arabic and translation
+        # CRITICAL: Include 'fields' parameter for text_uthmani
+        url = f"https://api.quran.com/api/v4/verses/by_key/{verse_key}"
+        params = {
+            'language': 'en',
+            'words': 'false',
+            'fields': 'text_uthmani'
+        }
         
-        arabic_response = requests.get(arabic_url, params=arabic_params, timeout=self.timeout)
-        arabic_response.raise_for_status()
-        arabic_data = arabic_response.json()
+        response = requests.get(url, params=params, timeout=self.timeout)
+        response.raise_for_status()
+        data = response.json()
         
-        arabic_text = arabic_data['verse']['text_uthmani']
+        arabic_text = data['verse']['text_uthmani']
         
-        # Fetch translation
-        trans_url = f"https://api.quran.com/api/v4/quran/translations/131"  # Sahih International
-        trans_params = {'verse_key': verse_key}
-        
-        trans_response = requests.get(trans_url, params=trans_params, timeout=self.timeout)
+        # Fetch translation separately using AlQuran.cloud (more reliable for translations)
+        # Quran.com v4 API translation endpoint structure changed, so use AlQuran.cloud for translations
+        trans_url = f"https://api.alquran.cloud/v1/ayah/{surah}:{ayah}/en.sahih"
+        trans_response = requests.get(trans_url, timeout=self.timeout)
         trans_response.raise_for_status()
         trans_data = trans_response.json()
         
-        translation_text = trans_data['translations'][0]['text']
-        
-        # Clean HTML tags from translation
-        import re
-        translation_text = re.sub(r'<[^>]+>', '', translation_text).strip()
+        translation_text = trans_data['data']['text']
         
         # Fetch surah info
         chapter_url = f"https://api.quran.com/api/v4/chapters/{surah}"
@@ -207,7 +212,7 @@ class MultiAPIQuranFetcher:
             'surah_name_arabic': chapter_data['chapter']['name_arabic'],
             'surah_number': surah,
             'ayah_number': ayah,
-            'source': 'Quran.com API'
+            'source': 'Quran.com API (Arabic) + AlQuran.cloud (Translation)'
         }
     
     def _fetch_alquran_cloud(self, surah: int, ayah: int) -> Optional[Dict]:

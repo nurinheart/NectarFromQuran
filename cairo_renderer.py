@@ -239,7 +239,7 @@ class CairoArabicRenderer:
     def render_english_text(self, text, font_family="Product Sans", font_size=40,
                           bg_color=(245, 242, 237), text_color=(80, 60, 40),
                           max_width=900, alignment="left", transparent_bg=False, line_height=1.6,
-                          highlight_keywords=False):
+                          highlight_keywords=False, accent_color="#FFD700"):
         """
         Render English text (for translations, tafsir, examples)
         
@@ -253,6 +253,7 @@ class CairoArabicRenderer:
             alignment: 'left', 'center', or 'right'
             line_height: Line spacing multiplier (default 1.6)
             highlight_keywords: If True, highlight important Islamic keywords
+            accent_color: Color for highlights (uses theme accent color)
         
         Returns:
             PIL Image with rendered text
@@ -288,11 +289,17 @@ class CairoArabicRenderer:
         
         # Apply random word highlighting if enabled
         if highlight_keywords:
-            # Use accent color for highlights (gold)
-            accent_hex = "#FFD700"  # Gold
-            highlighted_text = self.highlight_random_words(text, theme_color=accent_hex, highlight_ratio=0.15)
-            # Use pango_layout_set_markup for markup support
-            pango.pango.pango_layout_set_markup(layout._pointer, highlighted_text.encode('utf-8'), -1)
+            # Import config to get settings
+            from config import ENABLE_HIGHLIGHTING, HIGHLIGHT_RATIO, USE_ACCENT_COLOR_FOR_HIGHLIGHTS
+            
+            if ENABLE_HIGHLIGHTING:
+                # Use theme accent color or always gold based on config
+                highlight_color = accent_color if USE_ACCENT_COLOR_FOR_HIGHLIGHTS else "#FFD700"
+                highlighted_text = self.highlight_random_words(text, theme_color=highlight_color, highlight_ratio=HIGHLIGHT_RATIO)
+                # Use pango_layout_set_markup for markup support
+                pango.pango.pango_layout_set_markup(layout._pointer, highlighted_text.encode('utf-8'), -1)
+            else:
+                layout._set_text(text)
         else:
             layout._set_text(text)
         

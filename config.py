@@ -66,6 +66,18 @@ THEMES = {
 
 DEFAULT_THEME = "elegant_black"
 
+# ===== THEME ROTATION =====
+# Set to True to rotate through themes (one theme per post)
+# Set to False to use only DEFAULT_THEME
+ENABLE_THEME_ROTATION = False
+ROTATION_THEMES = ["elegant_black", "sage_cream", "teal_gold"]  # Order of rotation
+
+# ===== HIGHLIGHTING SETTINGS =====
+# Control keyword highlighting in translation, tafsir, and example slides
+ENABLE_HIGHLIGHTING = True  # Set to False to disable all highlighting
+HIGHLIGHT_RATIO = 0.15      # Percentage of words to highlight (0.15 = 15%)
+USE_ACCENT_COLOR_FOR_HIGHLIGHTS = True  # True = use theme accent color, False = always gold
+
 # ===== LAYOUT SETTINGS =====
 PADDING = 100  # Increased for better breathing room
 LINE_SPACING = 1.6  # More generous for readability

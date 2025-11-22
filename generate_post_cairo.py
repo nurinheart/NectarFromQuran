@@ -42,14 +42,36 @@ elif platform.system() == "Linux":  # Linux/GitHub Actions
 class QuranPostGeneratorCairo:
     """Generate Instagram carousel posts with perfect Arabic rendering"""
     
-    def __init__(self, theme_name=DEFAULT_THEME):
-        self.theme = THEMES.get(theme_name, THEMES[DEFAULT_THEME])
+    def __init__(self, theme_name=None):
+        # Initialize posted_file first for theme rotation
         self.posted_file = "posted_verses.json"
+        
+        # Theme rotation logic
+        if theme_name is None:
+            from config import ENABLE_THEME_ROTATION, ROTATION_THEMES, DEFAULT_THEME as DEFAULT
+            if ENABLE_THEME_ROTATION:
+                # Get current theme based on number of posted verses (rotation)
+                posted_count = self.get_posted_count_for_rotation()
+                theme_index = len(posted_count) % len(ROTATION_THEMES)
+                theme_name = ROTATION_THEMES[theme_index]
+                print(f"🎨 Theme rotation enabled: Using '{theme_name}' (post #{len(posted_count)+1}, rotation index {theme_index})")
+            else:
+                theme_name = DEFAULT
+        
+        self.theme = THEMES.get(theme_name, THEMES[DEFAULT_THEME])
+        self.theme_name = theme_name
         self.verses_data = get_all_verses()
         self.api = QuranAPI()
         self.cairo_renderer = CairoArabicRenderer(width=IMAGE_WIDTH, height=IMAGE_HEIGHT)
         self.load_posted_verses()
         self.current_verse_info = None  # Store current verse for caption generation
+    
+    def get_posted_count_for_rotation(self):
+        """Get posted verses list for theme rotation (called before load_posted_verses)"""
+        if os.path.exists(self.posted_file):
+            with open(self.posted_file, 'r') as f:
+                return json.load(f)
+        return []
     
     def hex_to_rgb(self, hex_color):
         """Convert hex color to RGB tuple"""
@@ -435,7 +457,8 @@ class QuranPostGeneratorCairo:
             alignment="left",  # LEFT ALIGNED
             transparent_bg=True,
             line_height=trans_config.get('line_height', 1.6),
-            highlight_keywords=True
+            highlight_keywords=True,
+            accent_color=self.theme['accent_color']  # Use theme accent color
         )
         
         # Composite onto background
@@ -517,7 +540,8 @@ class QuranPostGeneratorCairo:
             alignment="left",  # LEFT ALIGNED
             highlight_keywords=True,
             transparent_bg=True,
-            line_height=tafsir_config.get('line_height', 1.6)
+            line_height=tafsir_config.get('line_height', 1.6),
+            accent_color=self.theme['accent_color']  # Use theme accent color
         )
         
         # Composite onto background

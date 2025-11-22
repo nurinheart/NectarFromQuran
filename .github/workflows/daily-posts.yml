@@ -58,6 +58,21 @@ jobs:
       run: |
         python3 create_post.py
     
+    - name: Commit posted verses tracking file
+      if: success()
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add posted_verses.json
+        git diff --quiet && git diff --staged --quiet || git commit -m "Track posted verse [skip ci]"
+    
+    - name: Push changes
+      if: success()
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
+    
     - name: Upload generated images as artifacts (optional)
       if: always()
       uses: actions/upload-artifact@v4

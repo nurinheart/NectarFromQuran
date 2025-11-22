@@ -39,6 +39,7 @@ class QuranAPI:
         Get verse in Arabic (Uthmani Tajweed script with FULL diacritics) and English translation
         Returns: dict with 'arabic', 'translation', 'surah_name', 'surah_number', 'ayah_number'
         ROOT FIX: Uses Quran.com API v4 which has perfect Uthmani script with all harakat
+        NEVER SKIP: Retries 3 times with exponential backoff, timeout increased to 30s
         """
         cache_key = f"{surah}:{ayah}"
         
@@ -47,81 +48,113 @@ class QuranAPI:
             print(f"📖 Using cached verse {cache_key}")
             return self.cache[cache_key]
         
-        try:
-            # Calculate verse key (used by Quran.com API v4)
-            # Format: "surah:ayah" like "2:255" for Ayat al-Kursi
-            verse_key = f"{surah}:{ayah}"
-            
-            # Fetch Arabic text (Uthmani script with full harakat)
-            arabic_url = f"{self.base_url}/verses/by_key/{verse_key}"
-            arabic_params = {
-                'fields': 'text_uthmani',  # Get Uthmani script
-            }
-            
-            arabic_response = requests.get(arabic_url, params=arabic_params, timeout=15)
-            arabic_response.raise_for_status()
-            arabic_data = arabic_response.json()
-            
-            verse_info = arabic_data['verse']
-            
-            # Get Arabic text with FULL HARAKAT from Uthmani script
-            arabic_text = verse_info['text_uthmani']
-            
-            # Fetch translation (Sahih International - ID 20)
-            trans_url = f"{self.base_url}/quran/translations/20"
-            trans_params = {'verse_key': verse_key}
-            
-            trans_response = requests.get(trans_url, params=trans_params, timeout=15)
-            trans_response.raise_for_status()
-            trans_data = trans_response.json()
-            
-            # Get translation text
-            translation_text = "Translation not available"
-            if trans_data.get('translations') and len(trans_data['translations']) > 0:
-                translation_text = trans_data['translations'][0]['text']
-                # Remove HTML tags (footnote references like <sup foot_note=196080>1</sup>)
-                import re
-                translation_text = re.sub(r'<sup[^>]*>.*?</sup>', '', translation_text)
-                translation_text = re.sub(r'<[^>]+>', '', translation_text)  # Remove any other HTML tags
-                translation_text = translation_text.strip()
-            
-            # Get chapter (surah) info
-            chapter_url = f"{self.base_url}/chapters/{surah}"
-            chapter_response = requests.get(chapter_url, timeout=10)
-            chapter_data = chapter_response.json()
-            chapter_info = chapter_data['chapter']
-            
-            # Extract data
-            verse_data = {
-                'arabic': arabic_text,  # FULL Uthmani script with all harakat
-                'translation': translation_text,
-                'surah_name': chapter_info['name_simple'],
-                'surah_name_arabic': chapter_info['name_arabic'],
-                'surah_number': surah,
-                'ayah_number': ayah,
-                'edition_arabic': 'Uthmani Tajweed (Quran.com)',
-                'edition_translation': 'Sahih International'
-            }
-            
-            # Cache it
-            self.cache[cache_key] = verse_data
-            self.save_cache()
-            
-            print(f"✅ Fetched verse {cache_key}: {verse_data['surah_name']} {verse_data['ayah_number']}")
-            print(f"   Arabic preview: {arabic_text[:50]}...")
-            return verse_data
-            
-        except requests.exceptions.Timeout:
-            print(f"⚠️  API timeout for verse {cache_key}")
-            return None
-        except requests.exceptions.RequestException as e:
-            print(f"⚠️  API error for verse {cache_key}: {e}")
-            return None
-        except Exception as e:
-            print(f"❌ Unexpected error fetching verse {cache_key}: {e}")
-            import traceback
-            traceback.print_exc()
-            return None
+        # Retry configuration
+        max_retries = 3
+        timeout = 30  # Increased from 15s to 30s
+        
+        # Retry loop - NEVER skip a verse due to temporary network issues
+        for attempt in range(max_retries):
+            try:
+                if attempt > 0:
+                    import time
+                    wait_time = 2 ** attempt  # Exponential backoff: 2s, 4s, 8s
+                    print(f"🔄 Retry attempt {attempt + 1}/{max_retries} for verse {cache_key} (waiting {wait_time}s)...")
+                    time.sleep(wait_time)
+                
+                # Calculate verse key (used by Quran.com API v4)
+                # Format: "surah:ayah" like "2:255" for Ayat al-Kursi
+                verse_key = f"{surah}:{ayah}"
+                
+                # Fetch Arabic text (Uthmani script with full harakat)
+                arabic_url = f"{self.base_url}/verses/by_key/{verse_key}"
+                arabic_params = {
+                    'fields': 'text_uthmani',  # Get Uthmani script
+                }
+                
+                arabic_response = requests.get(arabic_url, params=arabic_params, timeout=timeout)
+                arabic_response.raise_for_status()
+                arabic_data = arabic_response.json()
+                
+                verse_info = arabic_data['verse']
+                
+                # Get Arabic text with FULL HARAKAT from Uthmani script
+                arabic_text = verse_info['text_uthmani']
+                
+                # Fetch translation (Sahih International - ID 20)
+                trans_url = f"{self.base_url}/quran/translations/20"
+                trans_params = {'verse_key': verse_key}
+                
+                trans_response = requests.get(trans_url, params=trans_params, timeout=timeout)
+                trans_response.raise_for_status()
+                trans_data = trans_response.json()
+                
+                # Get translation text
+                translation_text = "Translation not available"
+                if trans_data.get('translations') and len(trans_data['translations']) > 0:
+                    translation_text = trans_data['translations'][0]['text']
+                    # Remove HTML tags (footnote references like <sup foot_note=196080>1</sup>)
+                    import re
+                    translation_text = re.sub(r'<sup[^>]*>.*?</sup>', '', translation_text)
+                    translation_text = re.sub(r'<[^>]+>', '', translation_text)  # Remove any other HTML tags
+                    translation_text = translation_text.strip()
+                
+                # Get chapter (surah) info
+                chapter_url = f"{self.base_url}/chapters/{surah}"
+                chapter_response = requests.get(chapter_url, timeout=timeout)
+                chapter_data = chapter_response.json()
+                chapter_info = chapter_data['chapter']
+                
+                # Extract data
+                verse_data = {
+                    'arabic': arabic_text,  # FULL Uthmani script with all harakat
+                    'translation': translation_text,
+                    'surah_name': chapter_info['name_simple'],
+                    'surah_name_arabic': chapter_info['name_arabic'],
+                    'surah_number': surah,
+                    'ayah_number': ayah,
+                    'edition_arabic': 'Uthmani Tajweed (Quran.com)',
+                    'edition_translation': 'Sahih International'
+                }
+                
+                # Cache it
+                self.cache[cache_key] = verse_data
+                self.save_cache()
+                
+                print(f"✅ Fetched verse {cache_key}: {verse_data['surah_name']} {verse_data['ayah_number']}")
+                print(f"   Arabic preview: {arabic_text[:50]}...")
+                
+                # SUCCESS - return immediately, no need to retry
+                return verse_data
+                
+            except requests.exceptions.Timeout as e:
+                if attempt < max_retries - 1:
+                    print(f"⚠️  API timeout for verse {cache_key} (attempt {attempt + 1}/{max_retries})")
+                    continue  # Retry
+                else:
+                    print(f"❌ API timeout for verse {cache_key} after {max_retries} attempts")
+                    print(f"   This verse will be SKIPPED. Manual intervention needed!")
+                    return None
+                    
+            except requests.exceptions.RequestException as e:
+                if attempt < max_retries - 1:
+                    print(f"⚠️  API error for verse {cache_key}: {e} (attempt {attempt + 1}/{max_retries})")
+                    continue  # Retry
+                else:
+                    print(f"❌ API error for verse {cache_key} after {max_retries} attempts: {e}")
+                    print(f"   This verse will be SKIPPED. Manual intervention needed!")
+                    return None
+                    
+            except Exception as e:
+                # Unexpected errors should not retry
+                print(f"❌ Unexpected error fetching verse {cache_key}: {e}")
+                import traceback
+                traceback.print_exc()
+                return None
+        
+        # If we get here, all retries failed
+        print(f"❌ CRITICAL: All {max_retries} retry attempts failed for verse {cache_key}")
+        print(f"   This verse will be SKIPPED. Manual intervention needed!")
+        return None
     
     def get_surah_info(self, surah_number):
         """Get information about a surah"""

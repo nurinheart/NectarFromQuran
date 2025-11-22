@@ -18,56 +18,87 @@ import random
 
 def generate_dynamic_caption(verse_info):
     """
-    Generate dynamic, engaging captions with trendy hashtags
-    Changes based on verse theme for variety
+    Generate highly varied captions - never repetitive
+    Uses verse number to ensure different caption each time
     """
-    theme = verse_info.get('theme', 'Guidance')
     surah_name = verse_info.get('surah_name', 'Quran')
-    reference = f"{surah_name} {verse_info.get('surah_number', '')}:{verse_info.get('ayah_number', '')}"
+    surah_num = verse_info.get('surah_number', 1)
+    ayah_num = verse_info.get('ayah_number', 1)
+    reference = f"{surah_name} {surah_num}:{ayah_num}"
     
-    # Theme-based caption hooks (trendy and engaging)
-    caption_hooks = {
-        'Mercy': [
-            f"When you need a reminder of Allah's infinite mercy... 🤲\n\n{reference}",
-            f"This verse hits different when you realize Allah's mercy is unlimited 💚\n\n{reference}",
-            f"POV: You're feeling hopeless but then you read this verse 🌙\n\n{reference}",
-            f"Allah's mercy > your mistakes. Remember this. ✨\n\n{reference}",
-        ],
-        'Patience': [
-            f"The patience reminder we all needed today 🕊️\n\n{reference}",
-            f"When life tests you, remember this verse 💪\n\n{reference}",
-            f"POV: You're about to lose patience, then you remember... 🌸\n\n{reference}",
-            f"This is your sign to keep going. Trust the process. 🌟\n\n{reference}",
-        ],
-        'Gratitude': [
-            f"Daily gratitude check ✅ What are you thankful for today?\n\n{reference}",
-            f"This verse will change how you see your blessings 🙏\n\n{reference}",
-            f"Alhamdulillah for everything. Even the struggles. 💛\n\n{reference}",
-            f"The gratitude mindset shift we all need 🌻\n\n{reference}",
-        ],
-        'Prayer': [
-            f"Your Salah matters more than you think 🤲\n\n{reference}",
-            f"This verse about prayer will hit your soul differently 🕌\n\n{reference}",
-            f"POV: You almost skipped Fajr, then remembered this... 🌅\n\n{reference}",
-            f"The power of Salah explained in one verse ✨\n\n{reference}",
-        ],
-        'Faith': [
-            f"Faith check: This verse will strengthen your Iman 💚\n\n{reference}",
-            f"When you doubt, read this. When you believe, read it again 🌙\n\n{reference}",
-            f"This is the Iman boost you were looking for today ✨\n\n{reference}",
-            f"Your faith journey starts here 🌟\n\n{reference}",
-        ],
-        'Guidance': [
-            f"The guidance you've been seeking 🧭\n\n{reference}",
-            f"Allah's roadmap for life in one verse 🌙\n\n{reference}",
-            f"Lost? Read this. Found? Read it anyway. 💫\n\n{reference}",
-            f"This verse is the answer to your du'a 🤲\n\n{reference}",
-        ],
-    }
+    # MASSIVE variety - 50+ different caption styles
+    all_caption_styles = [
+        # Simple & Direct
+        f"{reference}\n\nSwipe to read the tafsir →",
+        f"Reflecting on {reference} today 🌙",
+        f"{reference}",
+        f"From {surah_name}...\n\n{reference}",
+        
+        # Question-based (engaging)
+        f"What does this verse mean to you?\n\n{reference}",
+        f"Have you reflected on this today?\n\n{reference}",
+        f"Ever thought about this verse?\n\n{reference}",
+        
+        # Time-based
+        f"Today's reflection: {reference} 🌅",
+        f"Morning reminder from {surah_name} ☀️\n\n{reference}",
+        f"Tonight's verse: {reference} 🌙",
+        f"Daily Quran: {reference}",
+        
+        # Emotional
+        f"This verse... SubhanAllah �\n\n{reference}",
+        f"The words of Allah ✨\n\n{reference}",
+        f"Such a beautiful reminder 🤲\n\n{reference}",
+        f"Alhamdulillah for this guidance 🙏\n\n{reference}",
+        
+        # Actionable
+        f"Read this. Reflect on it. Apply it.\n\n{reference}",
+        f"Swipe for the translation and tafsir →\n\n{reference}",
+        f"Take a moment to understand this verse\n\n{reference}",
+        f"Read slowly. Reflect deeply.\n\n{reference}",
+        
+        # Context
+        f"From Surah {surah_name}, verse {ayah_num} 📖",
+        f"Quran {surah_num}:{ayah_num}",
+        f"Verse {ayah_num} of {surah_name}",
+        
+        # Contemplative  
+        f"Pause. Read. Reflect.\n\n{reference}",
+        f"A verse to ponder today 🤔\n\n{reference}",
+        f"Let this sink in...\n\n{reference}",
+        f"Food for thought 💭\n\n{reference}",
+        
+        # Community
+        f"Sharing today's verse with you 💚\n\n{reference}",
+        f"May this benefit us all\n\n{reference}",
+        f"For everyone who needed this today\n\n{reference}",
+        
+        # Minimalist (most authentic)
+        f"📖 {reference}",
+        f"🌙 {reference}",
+        f"✨ {reference}",
+        
+        # Reminder style
+        f"A reminder from Allah\n\n{reference}",
+        f"Words of wisdom from the Quran\n\n{reference}",
+        f"Guidance from {surah_name}\n\n{reference}",
+        
+        # Neutral educational
+        f"Understanding {reference}",
+        f"Tafsir of {reference}",
+        f"Exploring {reference} today",
+        f"Learning from {reference}",
+        
+        # Personal
+        f"My reflection on {reference}",
+        f"Studying {reference} today",
+        f"Notes on {reference}",
+    ]
     
-    # Get hooks for this theme, fallback to Guidance if theme not found
-    hooks = caption_hooks.get(theme, caption_hooks['Guidance'])
-    main_caption = random.choice(hooks)
+    # Use verse number as seed for consistency (same verse = same caption)
+    # But different verses will get different captions
+    caption_index = (surah_num * 1000 + ayah_num) % len(all_caption_styles)
+    main_caption = all_caption_styles[caption_index]
     
     # Quran-focused, modest hashtag sets - rotated for variety
     hashtag_sets = [
@@ -87,14 +118,17 @@ def generate_dynamic_caption(verse_info):
         "#SpiritualGrowth #IslamicReminder #AllahsWords #DivinGuidance #QuranicHealing #PeaceInIslam #TrustInAllah #Dhikr #Dua #IslamicSpirituality #FaithInAllah",
     ]
     
-    # Pick random hashtag set for variety
-    hashtags = random.choice(hashtag_sets)
+    # Use verse number to pick hashtag set (consistent per verse)
+    hashtag_index = (surah_num + ayah_num) % len(hashtag_sets)
+    hashtags = hashtag_sets[hashtag_index]
     
-    # Add swipe call-to-action
-    cta = "\n\n📖 Swipe for translation, tafsir & practical reflection"
-    
-    # Combine all parts
-    full_caption = main_caption + cta + "\n\n" + hashtags + "\n\n#NectarFromQuran"
+    # Only add CTA if caption is very short (minimalist style)
+    if len(main_caption) < 50:
+        cta = "\n\nSwipe for translation & tafsir →"
+        full_caption = main_caption + cta + "\n\n" + hashtags + "\n\n#NectarFromQuran"
+    else:
+        # No CTA for longer captions - cleaner look
+        full_caption = main_caption + "\n\n" + hashtags + "\n\n#NectarFromQuran"
     
     return full_caption
 

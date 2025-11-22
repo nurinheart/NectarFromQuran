@@ -9,13 +9,11 @@ on:
   # Allow manual trigger for testing
   workflow_dispatch:
 
-# Add permissions for GitHub Actions to push to repo
-permissions:
-  contents: write
-
 jobs:
   generate-and-post:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for git push to work
     
     steps:
     - name: Checkout code

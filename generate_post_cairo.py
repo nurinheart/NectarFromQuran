@@ -146,8 +146,25 @@ class QuranPostGeneratorCairo:
     
     def get_next_verse(self):
         """
-        Get next unposted verse
-        NO 100 LIMIT - tracks all 6,236 verses endlessly
+        Get next unposted verse - SEQUENTIAL POSTING SYSTEM
+        
+        HOW IT WORKS:
+        ✅ Posts verses sequentially from Quran (all 6,236 verses in order)
+        ✅ Verse order: 1:1 → 1:2 → 1:3 → ... → 114:6
+        ✅ Tracks posted verses in posted_verses.json (committed to git after each post)
+        ✅ After all verses posted, cycles back to beginning
+        
+        WHY SEQUENTIAL?
+        - Ensures systematic coverage of entire Quran
+        - Followers get complete journey through Quran
+        - No random gaps or repetitions
+        - Easy to track progress (currently at verse X of 6,236)
+        
+        EXAMPLE PROGRESSION:
+        Post 1: Al-Fatihah 1:1 → posted_verses.json = [0]
+        Post 2: Al-Fatihah 1:2 → posted_verses.json = [0, 1]
+        Post 3: Al-Fatihah 1:3 → posted_verses.json = [0, 1, 2]
+        ...continuing through all 6,236 verses
         """
         available = [i for i in range(len(self.verses_data)) if i not in self.posted_indices]
         

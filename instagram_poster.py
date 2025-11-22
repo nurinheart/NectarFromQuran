@@ -41,9 +41,21 @@ class InstagramPoster:
                 print("🔐 Attempting to log in using session data...")
                 session_dict = json.loads(session_data)
                 self.client.set_settings(session_dict)
-                self.client.login_by_sessionid(self.client.sessionid)
-                print("✅ Logged in successfully using session data.")
-                return
+                
+                # Extract sessionid from the session data
+                sessionid = None
+                if 'authorization_data' in session_dict and 'sessionid' in session_dict['authorization_data']:
+                    sessionid = session_dict['authorization_data']['sessionid']
+                elif 'cookies' in session_dict and 'sessionid' in session_dict['cookies']:
+                    sessionid = session_dict['cookies']['sessionid']
+                
+                if sessionid:
+                    self.client.login_by_sessionid(sessionid)
+                    print("✅ Logged in successfully using session data.")
+                    return
+                else:
+                    raise ValueError("No sessionid found in session data")
+                    
             except Exception as e:
                 print(f"⚠️  Session login failed: {e}")
                 print("🔄 Attempting auto-recovery with username/password...")
@@ -56,11 +68,16 @@ class InstagramPoster:
             print(f"🔐 Logging in as @{self.username}...")
             self.client.login(self.username, self.password)
             
-            # Save new session
+            # Get session immediately after login
+            new_session = self.client.get_settings()
+            
+            # Save new session to file
             self.client.dump_settings(self.session_file)
             
-            # Also save to update GitHub secret (print for manual update)
-            new_session = self.client.get_settings()
+            # Relogin using the new session to ensure it's active
+            self.client.set_settings(new_session)
+            self.client.login_by_sessionid(self.client.sessionid)
+            
             print("✅ Logged in successfully! New session generated.")
             print("\n" + "="*60)
             print("📋 NEW SESSION DATA (update INSTAGRAM_SESSION_DATA secret):")

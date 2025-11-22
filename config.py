@@ -79,7 +79,7 @@ CAIRO_FONTS = {
         "size": 60,           # 🔤 ARABIC VERSE SIZE - reduced for less cluttered look
         "family": "Amiri", 
         "line_height": 2.0,   # More generous spacing for breathing room
-        "max_width": 980      # Increased further to minimize right padding
+        "max_width": 940      # Increased to reduce excessive right padding
     },
     "heading": {
         "size": 40,           # 📌 HEADING SIZE - slightly larger for hierarchy
@@ -151,8 +151,8 @@ WATERMARK_OPACITY = 120              # Watermark opacity (0-255)
 
 # ===== POSTING SCHEDULE =====
 POSTING_SCHEDULE = {
-    "morning_time": "06:00",  # Format: "HH:MM" in 24-hour format
-    "night_time": "21:00",    # Format: "HH:MM" in 24-hour format (21:00 = 9 PM)
+    "morning_time": "00:00",  # Format: "HH:MM" in 24-hour format
+    "night_time": "15:00",    # Format: "HH:MM" in 24-hour format (21:00 = 9 PM)
     "posts_per_day": 2,       # Number of posts per day
     "cleanup_days": 7         # Keep files for 7 days, delete older
 }

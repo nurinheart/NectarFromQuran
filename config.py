@@ -78,6 +78,11 @@ ENABLE_HIGHLIGHTING = True  # Set to False to disable all highlighting
 HIGHLIGHT_MAX_WORDS = 4     # Maximum number of words to highlight per slide (3-5 recommended)
 USE_ACCENT_COLOR_FOR_HIGHLIGHTS = True  # True = use theme accent color, False = always gold
 
+# ===== QUOTE MARKS SETTINGS =====
+# Control quote mark styling for tafsir slides
+USE_CURLY_QUOTES = True      # True = use " " (curly/smart quotes), False = use " (straight quotes)
+BOLD_QUOTE_MARKS = False     # True = make quotes bold and larger, False = same size as text
+
 # ===== LAYOUT SETTINGS =====
 PADDING = 100  # Increased for better breathing room
 LINE_SPACING = 1.6  # More generous for readability

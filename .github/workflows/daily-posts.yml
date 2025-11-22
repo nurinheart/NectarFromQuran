@@ -2,9 +2,10 @@ name: Daily Quran Posts
 
 on:
   schedule:
-    # 2 times daily (as configured in config.py POSTING_SCHEDULE)
-    - cron: '0 6 * * *'   # 06:00 UTC - Morning post
-    - cron: '0 21 * * *'  # 21:00 UTC - Night post
+    # 2 times daily with slight variations to avoid exact timing patterns
+    # MANUALLY change these times every week to avoid detection
+    - cron: '15 6 * * *'   # 06:15 UTC - Morning post (vary between 00-30)
+    - cron: '45 20 * * *'  # 20:45 UTC - Night post (vary between 20:30-21:30)
   
   # Allow manual trigger for testing
   workflow_dispatch:

@@ -302,13 +302,33 @@ class CairoArabicRenderer:
                 text = self.highlight_random_words(text, theme_color=highlight_color, max_words=HIGHLIGHT_MAX_WORDS)
                 # Now text has highlighting markup
         
-        # Add stylish bold quotes AFTER highlighting (so quotes aren't highlighted)
+        # Add quotes AFTER highlighting (so quotes aren't highlighted)
+        # Import quote settings from config
+        from config import USE_CURLY_QUOTES, BOLD_QUOTE_MARKS
+        
+        # Choose quote characters based on config
+        if USE_CURLY_QUOTES:
+            open_quote = '\u201C'  # " Left double quotation mark (curly)
+            close_quote = '\u201D'  # " Right double quotation mark (curly)
+        else:
+            open_quote = '"'  # Straight double quote
+            close_quote = '"'  # Straight double quote
+        
         if add_opening_quote:
-            # Large bold opening quote
-            text = f'<span size="x-large" weight="bold">"</span>{text}'
+            if BOLD_QUOTE_MARKS:
+                # Bold and larger quotes
+                text = f'<span size="x-large" weight="bold">{open_quote}</span>{text}'
+            else:
+                # Regular quotes (same size as text)
+                text = f'{open_quote}{text}'
+        
         if add_closing_quote:
-            # Large bold closing quote
-            text = f'{text}<span size="x-large" weight="bold">"</span>'
+            if BOLD_QUOTE_MARKS:
+                # Bold and larger quotes
+                text = f'{text}<span size="x-large" weight="bold">{close_quote}</span>'
+            else:
+                # Regular quotes (same size as text)
+                text = f'{text}{close_quote}'
         
         # Check if we have any markup to render
         has_markup = '<span' in text or '<b>' in text or '<i>' in text

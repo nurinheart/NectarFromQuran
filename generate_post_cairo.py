@@ -532,19 +532,32 @@ class QuranPostGeneratorCairo:
         tafsir_text = verse_data["tafsir"]
         
         # Check for quote markers added in generate_post()
-        has_open_marker = tafsir_text.startswith('__QUOTE_OPEN__')
-        has_close_marker = tafsir_text.endswith('__QUOTE_CLOSE__')
+        has_open_marker = '__QUOTE_OPEN__' in tafsir_text
+        has_close_marker = '__QUOTE_CLOSE__' in tafsir_text
+        has_no_quotes_marker = '__NO_QUOTES__' in tafsir_text
         
-        # Remove markers
-        if has_open_marker:
-            tafsir_text = tafsir_text.replace('__QUOTE_OPEN__', '')
-        if has_close_marker:
-            tafsir_text = tafsir_text.replace('__QUOTE_CLOSE__', '')
+        # Remove ALL markers
+        tafsir_text = tafsir_text.replace('__QUOTE_OPEN__', '')
+        tafsir_text = tafsir_text.replace('__QUOTE_CLOSE__', '')
+        tafsir_text = tafsir_text.replace('__NO_QUOTES__', '')
         
-        # Determine if we need to add quotes
-        # Single slide: both quotes. First slide: opening only. Last slide: closing only. Middle: none
-        add_opening = has_open_marker or (not has_open_marker and not has_close_marker)
-        add_closing = has_close_marker or (not has_open_marker and not has_close_marker)
+        # Determine if we need to add quotes based on markers
+        if has_no_quotes_marker:
+            # MIDDLE SLIDE - explicitly marked to have NO quotes
+            add_opening = False
+            add_closing = False
+        elif has_open_marker:
+            # First slide of multi-slide sequence
+            add_opening = True
+            add_closing = False
+        elif has_close_marker:
+            # Last slide of multi-slide sequence
+            add_opening = False
+            add_closing = True
+        else:
+            # Single slide (complete tafsir) - no markers at all
+            add_opening = True
+            add_closing = True
         
         tafsir_layer = self.cairo_renderer.render_english_text(
             text=tafsir_text,
@@ -959,8 +972,8 @@ class QuranPostGeneratorCairo:
                         # Last slide: will get closing quote in renderer
                         formatted_chunk = f'{chunk}__QUOTE_CLOSE__'
                     else:
-                        # Middle slides: no quotes
-                        formatted_chunk = chunk
+                        # Middle slides: EXPLICITLY mark as no quotes
+                        formatted_chunk = f'__NO_QUOTES__{chunk}'
                     slides.append(self.create_slide_tafsir({**verse_data, 'tafsir': formatted_chunk}))
                 print(f"✅ Created {len(chunks)} tafsir slides (showing FULL tafsir)")
             else:

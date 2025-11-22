@@ -140,6 +140,11 @@ def main():
     print("🕌 NectarFromQuran - Daily Quran Post Generator")
     print("=" * 60)
     
+    # Add random delay to mimic human behavior (30-180 seconds)
+    delay = random.randint(30, 180)
+    print(f"\n⏳ Random delay: {delay}s (mimics human behavior, avoids automation detection)")
+    time.sleep(delay)
+    
     try:
         # Initialize generator
         generator = QuranPostGeneratorCairo(DEFAULT_THEME)

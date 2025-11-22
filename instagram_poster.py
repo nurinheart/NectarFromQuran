@@ -165,12 +165,8 @@ class InstagramPoster:
             print(f"🔗 Media Code: {media.code}")
             print(f"🔗 Post URL: https://www.instagram.com/p/{media.code}/")
             
-            # Auto-like the post (helps with engagement)
-            try:
-                self.client.media_like(media.pk)
-                print(f"👍 Auto-liked the post")
-            except Exception as e:
-                print(f"⚠️  Could not auto-like: {e}")
+            # NOTE: Auto-like REMOVED to avoid Instagram automated behavior detection
+            # Manual engagement is safer and looks more organic
             
             # Cleanup temporary JPG files
             for i, (orig_path, jpg_path) in enumerate(zip(paths, jpg_paths)):

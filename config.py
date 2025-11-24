@@ -75,7 +75,7 @@ ROTATION_THEMES = ["elegant_black", "sage_cream", "teal_gold"]  # Order of rotat
 # ===== HIGHLIGHTING SETTINGS =====
 # Control keyword highlighting in translation, tafsir, and example slides
 ENABLE_HIGHLIGHTING = True  # Set to False to disable all highlighting
-HIGHLIGHT_MAX_WORDS = 4     # Maximum number of words to highlight per slide (3-5 recommended)
+HIGHLIGHT_MAX_WORDS = 3     # Maximum number of words to highlight per slide (3-5 recommended)
 USE_ACCENT_COLOR_FOR_HIGHLIGHTS = True  # True = use theme accent color, False = always gold
 
 # ===== QUOTE MARKS SETTINGS =====
@@ -170,7 +170,7 @@ WATERMARK_OPACITY = 120              # Watermark opacity (0-255)
 POSTING_SCHEDULE = {
     "morning_time": "00:00",  # Format: "HH:MM" in 24-hour format
     "night_time": "15:00",    # Format: "HH:MM" in 24-hour format (21:00 = 9 PM)
-    "posts_per_day": int(os.getenv('POSTS_PER_DAY', '2')),  # Configurable: 1 or 2 posts per day
+    "posts_per_day": int(os.getenv('POSTS_PER_DAY', '1')),  # Configurable: 1 or 2 posts per day
     "cleanup_days": 7         # Keep files for 7 days, delete older
 }
 

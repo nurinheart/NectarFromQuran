@@ -170,7 +170,7 @@ WATERMARK_OPACITY = 120              # Watermark opacity (0-255)
 POSTING_SCHEDULE = {
     "morning_time": "00:00",  # Format: "HH:MM" in 24-hour format
     "night_time": "15:00",    # Format: "HH:MM" in 24-hour format (21:00 = 9 PM)
-    "posts_per_day": 2,       # Number of posts per day
+    "posts_per_day": int(os.getenv('POSTS_PER_DAY', '2')),  # Configurable: 1 or 2 posts per day
     "cleanup_days": 7         # Keep files for 7 days, delete older
 }
 

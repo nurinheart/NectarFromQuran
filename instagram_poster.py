@@ -33,44 +33,97 @@ class InstagramPoster:
             self.login()
     
     def login(self):
-        """Login to Instagram"""
+        """Login to Instagram - auto-repairs sessions for future API changes"""
         session_data = os.getenv('INSTAGRAM_SESSION_DATA')
-        
+
         if session_data:
             try:
-                print("🔐 Attempting to log in using session data...")
+                print("🔐 Attempting to reuse existing session...")
                 session_dict = json.loads(session_data)
+
+                # AUTO-REPAIR: Add missing fields that Instagram API expects
+                # This prevents future API changes from breaking sessions
+                if 'pinned_channels_info' not in session_dict:
+                    session_dict['pinned_channels_info'] = {
+                        'pinned_channels_list': []
+                    }
+                    print("🔧 Auto-repaired session: Added missing pinned_channels_info")
+
+                # Add other potentially missing fields
+                if 'cookies' not in session_dict:
+                    session_dict['cookies'] = {}
+                if 'last_login' not in session_dict:
+                    session_dict['last_login'] = None
+                if 'device_settings' not in session_dict:
+                    session_dict['device_settings'] = {
+                        "app_version": "269.0.0.18.75",
+                        "android_version": 26,
+                        "android_release": "8.0.0",
+                        "dpi": "480dpi",
+                        "resolution": "1080x1920",
+                        "manufacturer": "OnePlus",
+                        "device": "devitron",
+                        "model": "6T Dev",
+                        "cpu": "qcom",
+                        "version_code": "314665256"
+                    }
+
                 self.client.set_settings(session_dict)
                 self.client.login_by_sessionid(self.client.sessionid)
-                print("✅ Logged in successfully using session data.")
-                return
+
+                # VERIFY session is actually valid by making a test API call
+                try:
+                    self.client.account_info()  # Lightweight test call
+                    print("✅ Session is VALID! Reusing existing session (no new login).")
+                    return  # SUCCESS - keep using this session
+                except Exception as verify_error:
+                    print(f"⚠️  Session verification failed: {verify_error}")
+                    print("🔄 Session truly expired, creating new one...")
+                    # Fall through to password login
+
+            except json.JSONDecodeError:
+                print("⚠️  Invalid session JSON format")
             except Exception as e:
-                print(f"⚠️  Session login failed: {e}")
-                print("   Please generate a new session.json and update the INSTAGRAM_SESSION_DATA secret.")
-                raise
-        
+                print(f"⚠️  Session load failed: {e}")
+                print("🔄 Attempting auto-recovery with username/password...")
+                # Fall through to password login
+
         if not self.username or not self.password:
-            raise ValueError("❌ Instagram credentials not set! Please set INSTAGRAM_SESSION_DATA secret.")
-        
+            raise ValueError("❌ Instagram credentials not set! Set INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD in GitHub secrets.")
+
         try:
-            print(f"🔐 Logging in as @{self.username}...")
+            print(f"🔐 Creating NEW session with password login as @{self.username}...")
             self.client.login(self.username, self.password)
-            
-            # Save session for future use
+
+            # Verify login worked
+            try:
+                account_info = self.client.account_info()
+                print(f"✅ NEW session created successfully! Logged in as @{account_info.username}")
+            except Exception as verify_err:
+                raise Exception(f"Login succeeded but verification failed: {verify_err}")
+
+            # Get and save session AFTER verifying it works
+            new_session = self.client.get_settings()
             self.client.dump_settings(self.session_file)
-            print("✅ Logged in successfully!")
-            
+
+            print("\n" + "="*60)
+            print("📋 COPY THIS TO INSTAGRAM_SESSION_DATA SECRET:")
+            print("="*60)
+            print(json.dumps(new_session, indent=2))
+            print("="*60)
+            print("\n⚠️  IMPORTANT: Copy the JSON above to INSTAGRAM_SESSION_DATA secret")
+            print("   This session will be reused for ~2 weeks until it expires!")
+            print("   Update at: https://github.com/nurinheart/NectarFromQuran/settings/secrets/actions\n")
+
         except TwoFactorRequired:
-            code = input("Enter 2FA code: ")
-            self.client.login(self.username, self.password, verification_code=code)
-            self.client.dump_settings(self.session_file)
-            print("✅ Logged in successfully with 2FA!")
-            
+            print("❌ 2FA is enabled. Please disable it temporarily or set up app-specific password.")
+            raise
+
         except ChallengeRequired:
             print("⚠️  Instagram security challenge required.")
-            print("Please login manually via Instagram app and try again.")
+            print("Please login manually via Instagram app and try again in 24 hours.")
             raise
-            
+
         except Exception as e:
             print(f"❌ Login failed: {e}")
             raise

@@ -14,6 +14,66 @@ import os
 import sys
 import time
 import random
+import datetime
+
+
+def should_post_now():
+    """
+    Check if we should post based on config schedule and current time.
+    Config is the FINAL decision maker for posting frequency and timing.
+    
+    Returns True if posting should proceed, False if should skip.
+    """
+    now = datetime.datetime.now(datetime.timezone.utc)
+    current_hour = now.hour
+    current_minute = now.minute
+    
+    # Parse configured times
+    morning_hour, morning_min = map(int, POSTING_SCHEDULE['morning_time'].split(':'))
+    night_hour, night_min = map(int, POSTING_SCHEDULE['night_time'].split(':'))
+    
+    # Check if current time matches any configured posting slot
+    current_time_matches = (
+        (current_hour == morning_hour and current_minute == morning_min) or
+        (current_hour == night_hour and current_minute == night_min)
+    )
+    
+    if not current_time_matches:
+        print(f"⏰ Current UTC time ({current_hour:02d}:{current_minute:02d}) doesn't match any configured posting slot")
+        return False
+    
+    # Check posting frequency
+    posts_per_day = POSTING_SCHEDULE['posts_per_day']
+    
+    if posts_per_day == 1:
+        # Single post per day - check which slot is active
+        active_slot = POSTING_SCHEDULE['active_slot'].lower()
+        
+        if active_slot == 'morning':
+            should_post = (current_hour == morning_hour and current_minute == morning_min)
+            slot_name = "morning"
+        elif active_slot == 'night':
+            should_post = (current_hour == night_hour and current_minute == night_min)
+            slot_name = "night"
+        else:
+            print(f"❌ Invalid active_slot '{active_slot}' in config. Use 'morning' or 'night'.")
+            return False
+            
+        if should_post:
+            print(f"✅ Config: 1 post/day - Active slot '{slot_name}' - Posting now")
+            return True
+        else:
+            print(f"📝 Config: 1 post/day - Active slot '{slot_name}' - Skipping this time slot")
+            return False
+            
+    elif posts_per_day == 2:
+        # Two posts per day - post at both configured times
+        print(f"✅ Config: 2 posts/day - Posting at both configured times")
+        return True
+        
+    else:
+        print(f"❌ Invalid posts_per_day '{posts_per_day}' in config. Use 1 or 2.")
+        return False
 
 
 def generate_dynamic_caption(verse_info):
@@ -173,6 +233,13 @@ def cleanup_old_files():
 def main():
     print("🕌 NectarFromQuran - Daily Quran Post Generator")
     print("=" * 60)
+    
+    # CHECK CONFIG-BASED POSTING SCHEDULE FIRST
+    # Config is the FINAL decision maker for when to post
+    if not should_post_now():
+        print("📋 Config decision: Skipping post for this time slot")
+        print("🎯 Config controls: posts_per_day, active_slot, morning_time, night_time")
+        sys.exit(0)  # Clean exit - no error, just not time to post
     
     # Add random delay to mimic human behavior (30-180 seconds)
     delay = random.randint(30, 180)

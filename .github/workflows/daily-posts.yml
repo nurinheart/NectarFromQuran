@@ -18,6 +18,14 @@ on:
         options:
         - '1'
         - '2'
+      active_slot:
+        description: 'Which time slot to use when posting 1x/day (ignored when 2x/day)'
+        required: false
+        default: 'morning'
+        type: choice
+        options:
+        - 'morning'
+        - 'night'
 
 jobs:
   generate-and-post:
@@ -63,41 +71,17 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: Determine if posting should run
-      id: should_post
-      run: |
-        # Get posts_per_day from workflow input or default to 2
-        POSTS_PER_DAY="${{ github.event.inputs.posts_per_day || '2' }}"
-        
-        # Get current hour to determine if this is morning (6) or night (20) run
-        CURRENT_HOUR=$(date -u +%H)
-        
-        if [ "$POSTS_PER_DAY" = "1" ]; then
-          # Only post in the morning (6 AM UTC) when posts_per_day is 1
-          if [ "$CURRENT_HOUR" = "06" ]; then
-            echo "should_post=true" >> $GITHUB_OUTPUT
-            echo "📝 Posting frequency: 1 post/day - Running morning post"
-          else
-            echo "should_post=false" >> $GITHUB_OUTPUT
-            echo "📝 Posting frequency: 1 post/day - Skipping night post"
-          fi
-        else
-          # Post both times when posts_per_day is 2
-          echo "should_post=true" >> $GITHUB_OUTPUT
-          echo "📝 Posting frequency: 2 posts/day - Running post"
-        fi
-    
     - name: Generate and post Quran verse
-      if: steps.should_post.outputs.should_post == 'true'
       env:
         INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
         INSTAGRAM_SESSION_DATA: ${{ secrets.INSTAGRAM_SESSION_DATA }}
         POSTS_PER_DAY: ${{ github.event.inputs.posts_per_day || '2' }}
+        ACTIVE_SLOT: ${{ github.event.inputs.active_slot || 'morning' }}
       run: |
         python3 create_post.py
     
     - name: Archive generated images to git (permanent storage)
-      if: steps.should_post.outputs.should_post == 'true' && success()
+      if: success()
       run: |
         # Create archive directory with date-based structure
         ARCHIVE_DIR="archive/$(date +%Y/%m)"
@@ -111,7 +95,7 @@ jobs:
         echo "Images: $(ls output/*.png 2>/dev/null | wc -l)" >> "$ARCHIVE_DIR/log.txt"
     
     - name: Commit posted verses and archived images
-      if: steps.should_post.outputs.should_post == 'true' && success()
+      if: success()
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
@@ -124,7 +108,7 @@ jobs:
         git diff --quiet && git diff --staged --quiet || git commit -m "📝 Track posted verse + Archive images [skip ci]"
     
     - name: Push changes to GitHub
-      if: steps.should_post.outputs.should_post == 'true' && success()
+      if: success()
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}

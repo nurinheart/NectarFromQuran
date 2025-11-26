@@ -175,6 +175,10 @@ POSTING_SCHEDULE = {
     "cleanup_days": 7         # Keep files for 7 days, delete older
 }
 
+# 🚨 IMPORTANT: After changing morning_time or night_time above:
+# Run: python3 update_workflow_schedule.py
+# Then commit and push the updated .github/workflows/daily-posts.yml file
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 💡 QUICK ADJUSTMENT EXAMPLES:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

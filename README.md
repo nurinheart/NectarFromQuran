@@ -140,11 +140,20 @@ DEFAULT_THEME = "elegant_black"  # Options: elegant_black, sage_cream, teal_gold
 ```
 
 ### Change Posting Schedule
-Edit `.github/workflows/daily-posts.yml`:
-```yaml
-schedule:
-  - cron: '0 6 * * *'   # Morning post (UTC)
-  - cron: '0 21 * * *'  # Night post (UTC)
+Edit `config.py` posting times:
+```python
+POSTING_SCHEDULE = {
+    "morning_time": "06:15",  # UTC time for morning posts
+    "night_time": "20:45",    # UTC time for night posts
+}
+```
+
+Then run the update script:
+```bash
+python3 update_workflow_schedule.py
+git add .github/workflows/daily-posts.yml
+git commit -m "Update posting schedule"
+git push
 ```
 
 ### Adjust Font Sizes

@@ -32,14 +32,20 @@ def should_post_now():
     morning_hour, morning_min = map(int, POSTING_SCHEDULE['morning_time'].split(':'))
     night_hour, night_min = map(int, POSTING_SCHEDULE['night_time'].split(':'))
     
-    # Check if current time matches any configured posting slot
-    current_time_matches = (
-        (current_hour == morning_hour and current_minute == morning_min) or
-        (current_hour == night_hour and current_minute == night_min)
-    )
+    # Convert times to minutes since midnight for easier comparison
+    current_minutes = current_hour * 60 + current_minute
+    morning_minutes = morning_hour * 60 + morning_min
+    night_minutes = night_hour * 60 + night_min
     
-    if not current_time_matches:
-        print(f"⏰ Current UTC time ({current_hour:02d}:{current_minute:02d}) doesn't match any configured posting slot")
+    # Allow 10-minute tolerance window for workflow execution delays
+    TIME_TOLERANCE_MINUTES = 10
+    
+    # Check if current time is within tolerance of any configured posting slot
+    morning_match = abs(current_minutes - morning_minutes) <= TIME_TOLERANCE_MINUTES
+    night_match = abs(current_minutes - night_minutes) <= TIME_TOLERANCE_MINUTES
+    
+    if not (morning_match or night_match):
+        print(f"⏰ Current UTC time ({current_hour:02d}:{current_minute:02d}) doesn't match any configured posting slot (within {TIME_TOLERANCE_MINUTES}min tolerance)")
         return False
     
     # Check posting frequency
@@ -50,10 +56,10 @@ def should_post_now():
         active_slot = POSTING_SCHEDULE['active_slot'].lower()
         
         if active_slot == 'morning':
-            should_post = (current_hour == morning_hour and current_minute == morning_min)
+            should_post = morning_match
             slot_name = "morning"
         elif active_slot == 'night':
-            should_post = (current_hour == night_hour and current_minute == night_min)
+            should_post = night_match
             slot_name = "night"
         else:
             print(f"❌ Invalid active_slot '{active_slot}' in config. Use 'morning' or 'night'.")

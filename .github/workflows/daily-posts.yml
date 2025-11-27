@@ -74,6 +74,7 @@ jobs:
     - name: Generate and post Quran verse
       env:
         INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
         INSTAGRAM_SESSION_DATA: ${{ secrets.INSTAGRAM_SESSION_DATA }}
         POSTS_PER_DAY: ${{ github.event.inputs.posts_per_day || '2' }}
         ACTIVE_SLOT: ${{ github.event.inputs.active_slot || 'morning' }}

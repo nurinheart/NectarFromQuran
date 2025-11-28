@@ -9,23 +9,6 @@ on:
 
   # Allow manual trigger for testing
   workflow_dispatch:
-    inputs:
-      posts_per_day:
-        description: 'Number of posts per day (1 or 2)'
-        required: false
-        default: '2'
-        type: choice
-        options:
-        - '1'
-        - '2'
-      active_slot:
-        description: 'Which time slot to use when posting 1x/day (ignored when 2x/day)'
-        required: false
-        default: 'morning'
-        type: choice
-        options:
-        - 'morning'
-        - 'night'
 
 jobs:
   generate-and-post:
@@ -76,8 +59,6 @@ jobs:
         INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
         INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
         INSTAGRAM_SESSION_DATA: ${{ secrets.INSTAGRAM_SESSION_DATA }}
-        POSTS_PER_DAY: ${{ github.event.inputs.posts_per_day || '2' }}
-        ACTIVE_SLOT: ${{ github.event.inputs.active_slot || 'morning' }}
       run: |
         python3 create_post.py
     

@@ -42,14 +42,12 @@ class InstagramPoster:
                 session_dict = json.loads(session_data)
 
                 # AUTO-REPAIR: Add missing fields that Instagram API expects
-                # This prevents future API changes from breaking sessions
                 if 'pinned_channels_info' not in session_dict:
                     session_dict['pinned_channels_info'] = {
                         'pinned_channels_list': []
                     }
                     print("🔧 Auto-repaired session: Added missing pinned_channels_info")
 
-                # Add other potentially missing fields
                 if 'cookies' not in session_dict:
                     session_dict['cookies'] = {}
                 if 'last_login' not in session_dict:
@@ -70,23 +68,14 @@ class InstagramPoster:
 
                 self.client.set_settings(session_dict)
                 self.client.login_by_sessionid(self.client.sessionid)
-
-                # VERIFY session is actually valid by making a test API call
-                try:
-                    self.client.account_info()  # Lightweight test call
-                    print("✅ Session is VALID! Reusing existing session (no new login).")
-                    return  # SUCCESS - keep using this session
-                except Exception as verify_error:
-                    print(f"⚠️  Session verification failed: {verify_error}")
-                    print("🔄 Session truly expired, creating new one...")
-                    # Fall through to password login
+                print("✅ Session loaded! Using existing session.")
+                return  # SUCCESS - session loaded, let it fail naturally if invalid
 
             except json.JSONDecodeError:
-                print("⚠️  Invalid session JSON format")
+                print("⚠️  Invalid session JSON format, falling back to password login...")
             except Exception as e:
                 print(f"⚠️  Session load failed: {e}")
-                print("🔄 Attempting auto-recovery with username/password...")
-                # Fall through to password login
+                print("🔄 Falling back to password login...")
 
         if not self.username or not self.password:
             raise ValueError("❌ Instagram credentials not set! Set INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD in GitHub secrets.")
@@ -94,15 +83,9 @@ class InstagramPoster:
         try:
             print(f"🔐 Creating NEW session with password login as @{self.username}...")
             self.client.login(self.username, self.password)
+            print(f"✅ NEW session created successfully! Logged in as @{self.username}")
 
-            # Verify login worked
-            try:
-                account_info = self.client.account_info()
-                print(f"✅ NEW session created successfully! Logged in as @{account_info.username}")
-            except Exception as verify_err:
-                raise Exception(f"Login succeeded but verification failed: {verify_err}")
-
-            # Get and save session AFTER verifying it works
+            # Get and save session
             new_session = self.client.get_settings()
             self.client.dump_settings(self.session_file)
 

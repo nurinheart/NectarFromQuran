@@ -132,6 +132,9 @@ def generate_dynamic_caption(verse_info):
         full_caption = main_caption + "\n\n" + hashtags + "\n\n#NectarFromQuran"
     
     return full_caption
+
+
+def cleanup_old_files():
     """Delete generated images older than configured days"""
     cleanup_days = POSTING_SCHEDULE.get('cleanup_days', 7)
     output_dir = "output"
